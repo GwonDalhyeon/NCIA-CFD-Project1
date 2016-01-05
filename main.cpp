@@ -22,6 +22,6 @@ void main()
 	testGrid2.X0 = 2;
 	cout << testGrid1.X0 << "\n";
 	cout << testGrid2.X0 << "\n";
-	// change.
+
 	
 }
