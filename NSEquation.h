@@ -8,8 +8,8 @@
 class NSEquationSolver
 {
 public:
-	GridInfo* GridNode;
-	GridInfo* GridCell;
+	GridInfo GridNode;
+	GridInfo GridCell;
 
 	NSEquationSolver();
 	~NSEquationSolver();

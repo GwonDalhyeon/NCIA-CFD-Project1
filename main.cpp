@@ -19,16 +19,9 @@ void main()
 	GridInfo testGrid1 = GridInfo(0.0, 1.0, 101);
 	
 	LevelSet testLevelSet = LevelSet(testGrid1);
+	testGrid1.deltaX = 1;
+	testLevelSet.grid.deltaX = 2;
 	cout << testGrid1.deltaX << "\n";
-	cout << testLevelSet.test << "\n";
-	//if (testLevelSet.grid == nullptr)
-	//{
-	//	cout << "null" << "\n";
-	//	cout<<testLevelSet.grid<<"\n"
-	//}
-	//else
-	//{
-		cout << testLevelSet.grid.deltaX << "\n";
-	//}
+	cout << testLevelSet.grid.deltaX << "\n";
 	
 }

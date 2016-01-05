@@ -28,6 +28,9 @@ public:
 	void gridInitialization(double x0, double x1, int num1, double y0, double y1, int num2);
 	void gridInitialization(double x0, double x1, int num1, double y0, double y1, int num2, double z0, double z1, int num3);
 
+	int index(int i, int j);
+	int index(int i, int j, int k);
+
 	GridInfo& operator=(const GridInfo& originGrid)
 	{
 		if (originGrid.dimension==1)
@@ -176,5 +179,15 @@ void GridInfo::gridInitialization(double x0, double x1, int num1, double y0, dou
 	{
 		z[i] = Z0 + deltaZ*double(i);
 	}
+}
+
+inline int GridInfo::index(int i, int j)
+{
+	return i + j*numX;
+}
+
+inline int GridInfo::index(int i, int j, int k)
+{
+	return i + j*numX + k*numX*numY;
 }
 
