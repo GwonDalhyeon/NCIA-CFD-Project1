@@ -21,14 +21,14 @@ void main()
 	LevelSet testLevelSet = LevelSet(testGrid1);
 	cout << testGrid1.deltaX << "\n";
 	cout << testLevelSet.test << "\n";
-	if (testLevelSet.grid == nullptr)
-	{
-		cout << "null" << "\n";
-		cout << testLevelSet.grid << "\n";
-	}
-	else
-	{
-		cout << testLevelSet.grid->deltaX << "\n";
-	}
+	//if (testLevelSet.grid == nullptr)
+	//{
+	//	cout << "null" << "\n";
+	//	cout<<testLevelSet.grid<<"\n"
+	//}
+	//else
+	//{
+		cout << testLevelSet.grid.deltaX << "\n";
+	//}
 	
 }

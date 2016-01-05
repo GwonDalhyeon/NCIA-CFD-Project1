@@ -41,7 +41,7 @@ double* CG(csr& A, double* b)
 		{
 			for (int n = A.indptr[i]; n < A.indptr[i + 1]; n++)
 			{
-				j = A.col[n];
+				j = int(A.col[n]);
 				temp2 = temp2 + p[i] * A.val[n] * p[j];
 			}
 		}
@@ -53,7 +53,7 @@ double* CG(csr& A, double* b)
 			temp = 0;
 			for (int n = A.indptr[i]; n < A.indptr[i + 1]; n++)
 			{
-				j = A.col[n];
+				j = int(A.col[n]);
 				temp = temp + A.val[n] * p[j];
 			}
 			rNew[i] = rOld[i] - alpha*temp;

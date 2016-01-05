@@ -16,6 +16,7 @@ public:
 	double* y;
 	double* z;
 
+	GridInfo();
 	GridInfo(double x0, double x1, int num1);
 	GridInfo(double x0, double x1, int num1, double y0, double y1, int num2);
 	GridInfo(double x0, double x1, int num1, double y0, double y1, int num2, double z0, double z1, int num3);
@@ -47,6 +48,20 @@ private:
 
 };
 
+inline GridInfo::GridInfo()
+{
+	X0 = 0, X1 = 0, Y0 = 0, Y1 = 0, Z0 = 0, Z1 = 0;
+	deltaX = 0, deltaY = 0, deltaZ = 0;
+	numX = 0, numY = 0, numZ = 0;
+	dimension = 0;
+
+	numMatX = 0, numMatY = 0, numMatZ = 0;
+
+	x = nullptr;
+	y = nullptr;
+	z = nullptr;
+}
+
 GridInfo::GridInfo(double x0, double x1, int num1)
 {
 	gridInitialization(x0, x1, num1);
@@ -60,7 +75,7 @@ GridInfo::GridInfo(double x0, double x1, int num1, double y0, double y1, int num
 	gridInitialization(x0, x1, num1, y0, y1, num2, z0, z1, num3);
 }
 
-inline GridInfo::GridInfo(GridInfo & inputGridInfo)
+GridInfo::GridInfo(GridInfo & inputGridInfo)
 {
 	if (inputGridInfo.dimension == 1)
 	{

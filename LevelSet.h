@@ -4,10 +4,11 @@
 class LevelSet
 {
 public:
-	GridInfo* grid;
+	GridInfo grid;
 	double* phi;
 	double test;
-	LevelSet(GridInfo& inputGrid);
+
+	LevelSet(const GridInfo& inputGrid);
 	~LevelSet();
 
 	int index(int i, int j);
@@ -16,40 +17,40 @@ private:
 
 };
 
-LevelSet::LevelSet(GridInfo& inputGrid)
+LevelSet::LevelSet(const GridInfo& inputGrid)
 {
-	GridInfo* grid = &GridInfo(inputGrid);
+	grid = inputGrid;
+	//grid = GridInfo(inputGrid.X0, inputGrid.X1, inputGrid.numX);
 
-	
-
-	if (grid->dimension==1)
+	if (grid.dimension==1)
 	{
-		double* phi = new double[grid->numX];
+		phi = new double[grid.numX];
 	}
-	if (grid->dimension==2)
+	if (grid.dimension==2)
 	{
-		double* phi = new double[grid->numX*grid->numY];
+		phi = new double[grid.numX*grid.numY];
 	}
-	if (grid->dimension==3)
+	if (grid.dimension==3)
 	{
-		double* phi = new double[grid->numX*grid->numY*grid->numZ];
+		phi = new double[grid.numX*grid.numY*grid.numZ];
 	}
-	cout << grid->deltaX << "\n";
+	cout << grid.deltaX << "\n";
+	test = 1;
 }
 
 LevelSet::~LevelSet()
 {
-	delete grid;
+	//delete grid;
 	delete phi;
 
 }
 
 inline int LevelSet::index(int i, int j)
 {
-	return i + j*grid->numX;
+	return i + j*grid.numX;
 }
 
 inline int LevelSet::index(int i, int j, int k)
 {
-	return i + j*grid->numX + k*grid->numX*grid->numY;
+	return i + j*grid.numX + k*grid.numX*grid.numY;
 }
