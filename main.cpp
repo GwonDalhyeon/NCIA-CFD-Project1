@@ -1,5 +1,8 @@
 #include "CSR.h"
 #include "NSEquation.h"
+//#include "PoissonEquation.h"
+#include "LevelSet.h"
+
 
 void main()
 {
@@ -14,14 +17,18 @@ void main()
 	delete b;
 
 	GridInfo testGrid1 = GridInfo(0.0, 1.0, 101);
-	//cout << testGrid1.x[0] << "\n";
-	//cout << testGrid1.x[10] << "\n";
-	GridInfo testGrid2 = GridInfo(testGrid1);
-	//testGrid2 = testGrid1;
-
-	testGrid2.X0 = 2;
-	cout << testGrid1.X0 << "\n";
-	cout << testGrid2.X0 << "\n";
-
+	
+	LevelSet testLevelSet = LevelSet(testGrid1);
+	cout << testGrid1.deltaX << "\n";
+	cout << testLevelSet.test << "\n";
+	if (testLevelSet.grid == nullptr)
+	{
+		cout << "null" << "\n";
+		cout << testLevelSet.grid << "\n";
+	}
+	else
+	{
+		cout << testLevelSet.grid->deltaX << "\n";
+	}
 	
 }
