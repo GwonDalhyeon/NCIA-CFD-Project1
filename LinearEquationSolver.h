@@ -306,8 +306,8 @@ double* PCG(int num, double* A, double* b)
 	//	}
 	//}
 	//ofstream asdf, zxcv;
-	//asdf.open("E:\Data/L.txt");
-	//zxcv.open("E:\Data/M.txt");
+	//asdf.open("D:\Data/L.txt");
+	//zxcv.open("D:\Data/M.txt");
 	//for (int i = 0; i < num; i++)
 	//{
 	//	for (int j = 0; j < num; j++)

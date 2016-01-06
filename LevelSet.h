@@ -63,22 +63,22 @@ inline int LevelSet::index(int i, int j, int k)
 	return i + j*grid.numX + k*grid.numX*grid.numY;
 }
 
-inline double LevelSet::unitNormal(int node)
+double LevelSet::unitNormal(int node)
 {
 	int i = node;
 	if (i<grid.numX - 1 && i>0)
 	{
 		return (this->phi[i + 1] - this->phi[i - 1]) / abs(this->phi[i + 1] - this->phi[i - 1]);
 	}
-	if (i == 0)
+	else if (i == 0)
 	{
 		return (this->phi[i + 1] - this->phi[i]) / abs(this->phi[i + 1] - this->phi[i]);
 	}
-	if (i == grid.numX - 1)
+	else if (i == grid.numX - 1)
 	{
 		return (this->phi[i] - this->phi[i - 2]) / abs(this->phi[i] - this->phi[i - 1]);
 	}
-
+	return 0;
 }
 
 inline void LevelSet::unitNormal(int node1, int node2, double* normal)
