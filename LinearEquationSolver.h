@@ -153,11 +153,8 @@ double* CG(int num, double* A, double* b)
 		}
 
 		temp = sqrt(abs(residual));
-		if (k % 10 == 0)
-		{
-			cout << ".";
-		}
-		cout << k << " " << temp << endl;
+
+		//cout << k << " " << temp << endl;
 		if (temp < tolerance)
 		{
 			delete rNew, rOld, p;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <time.h>
 
 #include "CSR.h"
 #include "GridInfomation.h"
@@ -213,7 +214,6 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 			levelSet.phi[i] = abs(grid.x[i] - 0.45) - 0.15 - grid.deltaX / 2;
 		}
 
-
 		leftBdry = 0, rightBdry = 0;
 
 		for (int i = 0; i < grid.numX; i++)
@@ -252,6 +252,7 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		//	jCondition1[i] = 0;
 		//	jCondition2[i] = 0;
 		//}
+
 		jCondition1[29] = -exp(-0.09);
 		jCondition1[30] = -exp(-0.09);
 		jCondition2[29] = -1.2*exp(-0.09);
@@ -613,7 +614,6 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 	{
 		double* fL	= new double[grid.numMatX];
 		double* fR	= new double[grid.numMatX];
-		double* b	= new double[grid.numMatX];
 
 		double normalLeft, normalCenter, normalRight;
 
@@ -622,7 +622,6 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 			normalLeft		= levelSet.unitNormal(i);
 			normalCenter	= levelSet.unitNormal(i + 1);
 			normalRight		= levelSet.unitNormal(i + 1 + 1);
-
 			if (levelSet.phi[i]>0 && levelSet.phi[i + 1] <= 0)
 			{
 				theta		= abs(levelSet.phi[i]) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
@@ -698,7 +697,7 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 				fR[i] = 0;
 			}
 
-			b[i] = -f[i] - fR[i] - fL[i];
+			poissonVector[i] = -f[i] - fR[i] - fL[i];
 
 		}
 
@@ -710,7 +709,6 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 		double* fR	= new double[grid.numMatX*grid.numMatY];
 		double* fB	= new double[grid.numMatX*grid.numMatY];
 		double* fT	= new double[grid.numMatX*grid.numMatY];
-		double* b	= new double[grid.numMatX*grid.numMatY];
 
 		double* normalLeft		= new double[2];
 		double* normalRight		= new double[2];
@@ -890,7 +888,7 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 					fT[matIndex] = 0;
 				}
 
-				b[matIndex] = -f[matIndex] - fR[matIndex] - fL[matIndex] - fB[matIndex] - fT[matIndex];
+				poissonVector[matIndex] = -f[matIndex] - fR[matIndex] - fL[matIndex] - fB[matIndex] - fT[matIndex];
 			}
 
 		}
@@ -935,7 +933,9 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 inline void PoissonEquationSolver::solvePoissonEquationJumpCondi(int example)
 {
 	generateJumpCondi(example);
+
 	generatePoissonMatrixJumpCondi();
+
 	generatePoissonVectorJumpCondi();
 
 	if (grid.dimension==1)
@@ -985,11 +985,33 @@ inline void PoissonEquationSolver::solvePoissonEquationJumpCondi(int example)
 
 inline void PoissonEquationSolver::outputResult()
 {
+	//clock_t before;
+	//double  result;
+	//before = clock();
+
 	ofstream solutionFile;
-	solutionFile.open("D:\\Data/poisson.txt");
-	for (int i = 0; i < grid.numX; i++)
+	solutionFile.open("D:\\Data/poisson.txt", ios::binary);
+	if (grid.dimension==1)
 	{
-		solutionFile << i << " " << grid.x[i] << " " << solution[i] << endl;
+		for (int i = 0; i < grid.numX; i++)
+		{
+			solutionFile << i << " " << grid.x[i] << " " << solution[i] << endl;
+		}
 	}
+	if (grid.dimension==2)
+	{
+		for (int i = 0; i < grid.numX; i++)
+		{
+			for (int j = 0; j < grid.numY; j++)
+			{
+				solutionFile << i << " " << j << " " << grid.x[i] << " " << grid.y[j] << " " << solution[i + j*grid.numX] << endl;
+			}
+		}
+	}
+	
 	solutionFile.close();
+
+	//result = (double)(clock() - before) / CLOCKS_PER_SEC;
+	//cout << "binary : " << result << "\n";
+	////printf("걸린시간은 %5.2f 입니다.\n", result);
 }

@@ -17,13 +17,49 @@ public:
 	double unitNormal(int node);
 	void unitNormal(int node1, int node2, double* normal);
 
+	LevelSet& operator=(const LevelSet& originLevelSet)
+	{
+		grid = originLevelSet.grid;
+
+		if (phi!=nullptr)
+		{
+			delete phi;
+		}
+
+		if (grid.dimension==1)
+		{
+			phi = new double[grid.numX];
+			for (int i = 0; i < grid.numX; i++)
+			{
+				phi[i] = originLevelSet.phi[i];
+			}
+		}
+		else if (grid.dimension==2)
+		{
+			phi = new double[grid.numX*grid.numY];
+			for (int i = 0; i < grid.numX*grid.numY; i++)
+			{
+				phi[i] = originLevelSet.phi[i];
+			}
+		}
+		else
+		{
+			phi = new double[grid.numX*grid.numY*grid.numZ];
+			for (int i = 0; i < grid.numX*grid.numY*grid.numZ; i++)
+			{
+				phi[i] = originLevelSet.phi[i];
+			}
+		}
+
+
+		return *this;
+	}
 private:
 
 };
 
 inline LevelSet::LevelSet()
 {
-	phi = nullptr;
 }
 
 LevelSet::LevelSet(const GridInfo& inputGrid)
@@ -43,7 +79,6 @@ LevelSet::LevelSet(const GridInfo& inputGrid)
 	{
 		phi = new double[grid.numX*grid.numY*grid.numZ];
 	}
-	cout << grid.deltaX << "\n";
 }
 
 LevelSet::~LevelSet()
@@ -63,20 +98,20 @@ inline int LevelSet::index(int i, int j, int k)
 	return i + j*grid.numX + k*grid.numX*grid.numY;
 }
 
-double LevelSet::unitNormal(int node)
+inline double LevelSet::unitNormal(int node)
 {
 	int i = node;
 	if (i<grid.numX - 1 && i>0)
 	{
-		return (this->phi[i + 1] - this->phi[i - 1]) / abs(this->phi[i + 1] - this->phi[i - 1]);
+		return (phi[i + 1] - phi[i - 1]) / abs(phi[i + 1] - phi[i - 1]);
 	}
 	else if (i == 0)
 	{
-		return (this->phi[i + 1] - this->phi[i]) / abs(this->phi[i + 1] - this->phi[i]);
+		return (phi[i + 1] - phi[i]) / abs(phi[i + 1] - phi[i]);
 	}
 	else if (i == grid.numX - 1)
 	{
-		return (this->phi[i] - this->phi[i - 2]) / abs(this->phi[i] - this->phi[i - 1]);
+		return (phi[i] - phi[i - 1]) / abs(phi[i] - phi[i - 1]);
 	}
 	return 0;
 }
@@ -88,27 +123,27 @@ inline void LevelSet::unitNormal(int node1, int node2, double* normal)
 
 	if (i<grid.numX - 1 && i>0)
 	{
-		normal[0] = (this->phi[(i + 1) + j*grid.numX] - this->phi[i - 1 + j*grid.numX]) / (abs(this->phi[i + 1 + j*grid.numX] - this->phi[i - 1 + j*grid.numX]) + DBL_EPSILON);
+		normal[0] = (phi[(i + 1) + j*grid.numX] - phi[i - 1 + j*grid.numX]) / (abs(phi[i + 1 + j*grid.numX] - phi[i - 1 + j*grid.numX]) + DBL_EPSILON);
 	}
 	if (i == 0)
 	{
-		normal[0] = (this->phi[(i + 1) + j*grid.numX] - this->phi[i + j*grid.numX]) / (abs(this->phi[i + 1 + j*grid.numX] - this->phi[i + j*grid.numX]) + DBL_EPSILON);
+		normal[0] = (phi[(i + 1) + j*grid.numX] - phi[i + j*grid.numX]) / (abs(phi[i + 1 + j*grid.numX] - phi[i + j*grid.numX]) + DBL_EPSILON);
 	}
 	if (i == grid.numX - 1)
 	{
-		normal[0] = (this->phi[i + j*grid.numX] - this->phi[i - 1 + j*grid.numX]) / (abs(this->phi[i + j*grid.numX] - this->phi[i - 1 + j*grid.numX]) + DBL_EPSILON);
+		normal[0] = (phi[i + j*grid.numX] - phi[i - 1 + j*grid.numX]) / (abs(phi[i + j*grid.numX] - phi[i - 1 + j*grid.numX]) + DBL_EPSILON);
 	}
 
 	if (j<grid.numX - 1 && j>0)
 	{
-		normal[1] = (this->phi[i + (j + 1)*grid.numX] - this->phi[i + (j - 1)*grid.numX]) / (abs(this->phi[i + (j + 1)*grid.numX] - this->phi[i + (j - 1)*grid.numX]) + DBL_EPSILON);
+		normal[1] = (phi[i + (j + 1)*grid.numX] - phi[i + (j - 1)*grid.numX]) / (abs(phi[i + (j + 1)*grid.numX] - phi[i + (j - 1)*grid.numX]) + DBL_EPSILON);
 	}
 	if (j == 0)
 	{
-		normal[1] = (this->phi[i + (j + 1)*grid.numX] - this->phi[i + (j)*grid.numX]) / (abs(this->phi[i + (j + 1)*grid.numX] - this->phi[i + (j)*grid.numX]) + DBL_EPSILON);
+		normal[1] = (phi[i + (j + 1)*grid.numX] - phi[i + (j)*grid.numX]) / (abs(phi[i + (j + 1)*grid.numX] - phi[i + (j)*grid.numX]) + DBL_EPSILON);
 	}
 	if (j == grid.numX - 1)
 	{
-		normal[1] = (this->phi[i + (j)*grid.numX] - this->phi[i + (j - 1)*grid.numX]) / (abs(this->phi[i + (j)*grid.numX] - this->phi[i + (j - 1)*grid.numX]) + DBL_EPSILON);
+		normal[1] = (phi[i + (j)*grid.numX] - phi[i + (j - 1)*grid.numX]) / (abs(phi[i + (j)*grid.numX] - phi[i + (j - 1)*grid.numX]) + DBL_EPSILON);
 	}
 }

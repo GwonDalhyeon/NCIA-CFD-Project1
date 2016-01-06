@@ -236,7 +236,7 @@ inline void LaplaceEquationSolver::outputResult()
 	for (int i = 0; i < grid.numX; i++)
 	{
 		solutionFile << i << " " << grid.x[i] << " " << solution[i] << endl;
-		//solutionFile<<domainInfo.x[i]<< endl;
+		//solutionFile<<grid.x[i]<< endl;
 	}
 	solutionFile.close();
 }
