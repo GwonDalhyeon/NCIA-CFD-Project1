@@ -120,30 +120,98 @@ inline void LevelSet::unitNormal(int node1, int node2, double* normal)
 {
 	int i = node1;
 	int j = node2;
+	normal[0] = 0;
+	normal[1] = 0;
 
 	if (i<grid.numX - 1 && i>0)
 	{
-		normal[0] = (phi[(i + 1) + j*grid.numX] - phi[i - 1 + j*grid.numX]) / (abs(phi[i + 1 + j*grid.numX] - phi[i - 1 + j*grid.numX]) + DBL_EPSILON);
+		if (j>=0 && j<grid.numY)
+		{
+			normal[0] = (phi[index(i + 1, j)] - phi[index(i - 1, j)]) / (abs(phi[index(i + 1, j)] - phi[index(i - 1, j)]) + DBL_EPSILON);
+		}
+		else if (j < 0)
+		{
+			normal[0] = (phi[index(i + 1, 0)] - phi[index(i - 1, 0)]) / (abs(phi[index(i + 1, 0)] - phi[index(i - 1, 0)]) + DBL_EPSILON);
+		}
+		else if (j >= grid.numY)
+		{
+			normal[0] = (phi[index(i + 1, grid.numY - 1)] - phi[index(i - 1, grid.numY - 1)]) / (abs(phi[index(i + 1, grid.numY - 1)] - phi[index(i - 1, grid.numY - 1)]) + DBL_EPSILON);
+		}
 	}
-	if (i == 0)
-	{
-		normal[0] = (phi[(i + 1) + j*grid.numX] - phi[i + j*grid.numX]) / (abs(phi[i + 1 + j*grid.numX] - phi[i + j*grid.numX]) + DBL_EPSILON);
+	else if (i == 0)
+	{	
+		if (j<grid.numY && j >= 0)
+		{
+			normal[0] = (phi[index(i + 1, j)] - phi[index(i, j)]) / (abs(phi[index(i + 1, j)] - phi[index(i, j)]) + DBL_EPSILON);
+		}
+		else if (j < 0)
+		{
+			normal[0] = (phi[index(i + 1, 0)] - phi[index(i, 0)]) / (abs(phi[index(i + 1, 0)] - phi[index(i, 0)]) + DBL_EPSILON);
+		}
+		else if (j >= grid.numY)
+		{
+			normal[0] = (phi[index(i + 1, grid.numY - 1)] - phi[index(i, grid.numY - 1)]) / (abs(phi[index(i + 1, grid.numY - 1)] - phi[index(i, grid.numY - 1)]) + DBL_EPSILON);
+		}
 	}
-	if (i == grid.numX - 1)
+	else if (i == grid.numX - 1)
 	{
-		normal[0] = (phi[i + j*grid.numX] - phi[i - 1 + j*grid.numX]) / (abs(phi[i + j*grid.numX] - phi[i - 1 + j*grid.numX]) + DBL_EPSILON);
+		if (j >= 0 && j<grid.numY)
+		{
+			normal[0] = (phi[index(i, j)] - phi[index(i - 1, j)]) / (abs(phi[index(i, j)] - phi[index(i - 1, j)]) + DBL_EPSILON);
+		}
+		else if (j < 0)
+		{
+			normal[0] = (phi[index(i, 0)] - phi[index(i - 1, 0)]) / (abs(phi[index(i, 0)] - phi[index(i - 1, 0)]) + DBL_EPSILON);
+		}
+		else if (j >= grid.numY)
+		{
+			normal[0] = (phi[index(i, grid.numY - 1)] - phi[index(i - 1, grid.numY - 1)]) / (abs(phi[index(i, grid.numY - 1)] - phi[index(i - 1, grid.numY - 1)]) + DBL_EPSILON);
+		}
 	}
 
-	if (j<grid.numX - 1 && j>0)
+	if (j<grid.numY - 1 && j>0)
 	{
-		normal[1] = (phi[i + (j + 1)*grid.numX] - phi[i + (j - 1)*grid.numX]) / (abs(phi[i + (j + 1)*grid.numX] - phi[i + (j - 1)*grid.numX]) + DBL_EPSILON);
+		if (i<grid.numX  && i>=0)
+		{
+			normal[1] = (phi[index(i, j + 1)] - phi[index(i, j - 1)]) / (abs(phi[index(i, j + 1)] - phi[index(i, j - 1)]) + DBL_EPSILON);
+		}
+		else if (i<0)
+		{
+			normal[1] = (phi[index(0, j + 1)] - phi[index(0, j - 1)]) / (abs(phi[index(0, j + 1)] - phi[index(0, j - 1)]) + DBL_EPSILON);
+		}
+		else if (i>=grid.numX)
+		{
+			normal[1] = (phi[index(grid.numX - 1, j + 1)] - phi[index(grid.numX - 1, j - 1)]) / (abs(phi[index(grid.numX - 1, j + 1)] - phi[index(grid.numX - 1, j - 1)]) + DBL_EPSILON);
+		}
 	}
-	if (j == 0)
+	else if (j == 0)
 	{
-		normal[1] = (phi[i + (j + 1)*grid.numX] - phi[i + (j)*grid.numX]) / (abs(phi[i + (j + 1)*grid.numX] - phi[i + (j)*grid.numX]) + DBL_EPSILON);
+		if (i<grid.numX  && i >= 0)
+		{
+			normal[1] = (phi[index(i, j + 1)] - phi[index(i, j)]) / (abs(phi[index(i, j + 1)] - phi[index(i, j)]) + DBL_EPSILON);
+		}
+		else if (i<0)
+		{
+			normal[1] = (phi[index(0, j + 1)] - phi[index(0, j)]) / (abs(phi[index(0, j + 1)] - phi[index(0, j)]) + DBL_EPSILON);
+		}
+		else if (i >= grid.numX)
+		{
+			normal[1] = (phi[index(grid.numX - 1, j + 1)] - phi[index(grid.numX - 1, j)]) / (abs(phi[index(grid.numX - 1, j + 1)] - phi[index(grid.numX - 1, j)]) + DBL_EPSILON);
+		}
 	}
-	if (j == grid.numX - 1)
+	else if (j == grid.numY - 1)
 	{
-		normal[1] = (phi[i + (j)*grid.numX] - phi[i + (j - 1)*grid.numX]) / (abs(phi[i + (j)*grid.numX] - phi[i + (j - 1)*grid.numX]) + DBL_EPSILON);
+		if (i<grid.numX  && i >= 0)
+		{
+			normal[1] = (phi[index(i, j)] - phi[index(i, j - 1)]) / (abs(phi[index(i, j)] - phi[index(i, j - 1)]) + DBL_EPSILON);
+		}
+		else if (i<0)
+		{
+			normal[1] = (phi[index(0, j)] - phi[index(0, j - 1)]) / (abs(phi[index(0, j)] - phi[index(0, j - 1)]) + DBL_EPSILON);
+		}
+		else if (i >= grid.numX)
+		{
+			normal[1] = (phi[index(grid.numX - 1, j)] - phi[index(grid.numX - 1, j - 1)]) / (abs(phi[index(grid.numX - 1, j)] - phi[index(grid.numX-1, j - 1)]) + DBL_EPSILON);
+		}
 	}
 }

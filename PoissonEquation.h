@@ -207,7 +207,6 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		//Y0 = 0; Y1 = 1; numY = 101;
 		//Z0 = 0; Z1 = 1; numZ = 101;
 
-		//grid = inputGrid;
 		levelSet = LevelSet(grid);
 		for (int i = 0; i < grid.numX; i++)
 		{
@@ -279,13 +278,12 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		//Y0 = 0; Y1 = 1; numY = 11;
 		//Z0 = 0; Z1 = 1; numZ = 101;
 
-		//grid = inputGrid;
 		levelSet = LevelSet(grid);
 		for (int j = 0; j < grid.numY; j++)
 		{
 			for (int i = 0; i < grid.numX; i++)
 			{
-				levelSet.phi[i + j*grid.numX] = sqrt((grid.x[i] - 0.5)*(grid.x[i] - 0.5) + (grid.y[j] - 0.5)*(grid.y[j] - 0.5)) - 0.25 - grid.deltaX / 2;
+				levelSet.phi[index(i,j)] = sqrt((grid.x[i] - 0.5)*(grid.x[i] - 0.5) + (grid.y[j] - 0.5)*(grid.y[j] - 0.5)) - 0.25 - grid.deltaX / 2;
 			}
 		}
 
@@ -732,12 +730,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 				topIndex	= index(i + 1, j + 1 + 1);	// i + 1 + (j + 1 + 1)*grid.numX;
 
 				levelSet.unitNormal(i - 1, j, normalLeft);
-				levelSet.unitNormal(i - 1, j, normalLeft);
 				levelSet.unitNormal(i + 1, j, normalRight);
 				levelSet.unitNormal(i, j, normalCenter);
 				levelSet.unitNormal(i, j - 1, normalBottom);
 				levelSet.unitNormal(i, j + 1, normalTop);
-
+				
 				if (levelSet.phi[leftIndex]>0 && levelSet.phi[centIndex] <= 0)
 				{
 					theta			= abs(levelSet.phi[leftIndex]) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
@@ -926,7 +923,7 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 		//bbb.close();
 		//fff.close();
 
-		delete[] fR, fL, fT, fB, normalBottom, normalLeft, normalRight, normalTop;
+		delete[] fR, fL, fT, fB, normalBottom, normalLeft, normalRight, normalTop, normalCenter;
 	}
 }
 
@@ -938,47 +935,57 @@ inline void PoissonEquationSolver::solvePoissonEquationJumpCondi(int example)
 
 	generatePoissonVectorJumpCondi();
 
+
+	//ofstream qwer;
+	//qwer.open("D:\Data/b1.txt", ios::binary);
+	//for (int i = 0; i < grid.numMatX*grid.numMatY; i++)
+	//{
+	//	qwer << poissonVector[i] << endl;
+	//}
+	//qwer.close();
+
+
+	//ofstream asdf;
+	//asdf.open("D:\Data/A1.txt", ios::binary);
+	//for (int i = 0; i < grid.numMatX*grid.numMatY; i++)
+	//{
+	//	for (int j = 0; j < grid.numMatX*grid.numMatY; j++)
+	//	{
+	//		asdf << poissonMatrix[i*grid.numMatX*grid.numMatY + j] << " ";
+	//	}
+	//	asdf << endl;
+	//}
+	//asdf.close();
+
+
+
+
 	if (grid.dimension==1)
 	{
 		tempSol = CG(grid.numMatX, poissonMatrix, poissonVector);
 
+		solution[0] = leftBdry; solution[grid.numX - 1] = rightBdry;
+		for (int i = 0; i < grid.numMatX; i++)
+		{
+			solution[i + 1] = tempSol[i];
+			//cout<<i<<" "<<sol[i]<<endl;
+		}
 	}
-	if (grid.dimension==2)
+	else if (grid.dimension==2)
 	{
 		sparsePoissonMatrix = csr(grid.numMatX*grid.numMatY, grid.numMatX*grid.numMatY, poissonMatrix);
 		tempSol = CG(sparsePoissonMatrix, poissonVector);
+
+		for (int i = 0; i < grid.numMatX; i++)
+		{
+			for (int j = 0; j < grid.numMatY; j++)
+			{
+				solution[i + 1 + (j + 1)*grid.numX] = tempSol[i + j*grid.numMatX];
+			}
+		}
 	}
 	
 	
-	solution[0] = leftBdry; solution[grid.numX - 1] = rightBdry;
-	for (int i = 0; i < grid.numMatX; i++)
-	{
-		solution[i + 1] = tempSol[i];
-		//cout<<i<<" "<<sol[i]<<endl;
-	}
-
-
-	//ofstream asdf;
-	//asdf.open("E:\Data/A.txt");
-	//for (int i = 0; i < grid.numMatX; i++)
-	//{
-	//	for (int j = 0; j < grid.numMatX; j++)
-	//	{
-	//		asdf<<A[i*grid.numMatX +j]<<" ";
-	//	}
-	//	asdf<<endl;
-	//}
-	//asdf.close();
-	//
-	//
-	//ofstream qwer;
-	//qwer.open("E:\Data/b.txt");
-	//for (int i = 0; i < grid.numMatX; i++)
-	//{
-	//	qwer<<b[i]<< endl;
-	//}
-	//qwer.close();
-
 	outputResult();
 
 }

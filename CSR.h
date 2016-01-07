@@ -21,6 +21,43 @@ public:
 	csr();
 	~csr();
 
+	csr& operator=(const csr& inputCsr)
+	{
+		if (val != nullptr)
+		{
+			delete val;
+		}
+		if (col != nullptr)
+		{
+			delete col;
+		}
+		if (indptr != nullptr)
+		{
+			delete indptr;
+		}
+
+		colNum = inputCsr.colNum;
+		rowNum = inputCsr.rowNum;
+
+		indptr = new int[rowNum + 1];
+
+		for (int i = 0; i < rowNum+1; i++)
+		{
+			indptr[i] = inputCsr.indptr[i];
+		}
+		int tempIndex = indptr[rowNum];
+
+		val = new double[tempIndex];
+		col = new double[tempIndex];
+
+		for (int i = 0; i < tempIndex; i++)
+		{
+			val[i] = inputCsr.val[i];
+			col[i] = inputCsr.col[i];
+		}
+		return *this;
+	}
+
 private:
 
 };
