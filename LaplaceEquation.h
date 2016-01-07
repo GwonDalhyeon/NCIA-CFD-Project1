@@ -1,4 +1,8 @@
 #pragma once
+
+#include <iostream>
+#include <time.h>
+
 #include "CSR.h"
 #include "GridInfomation.h"
 #include "LevelSet.h"
@@ -17,11 +21,13 @@ public:
 	double* tempSol;
 	double leftBdry, rightBdry;
 
+	csr sparseLaplaceMatrix;
 	GridInfo grid;
 	LevelSet levelSet;
 
 	LaplaceEquationSolver();
 	~LaplaceEquationSolver();
+	LaplaceEquationSolver(GridInfo inputGrid);
 
 	int index(int i, int j);
 	int index(int i, int j, int k);
@@ -31,10 +37,10 @@ public:
 	//int indexMat(int i, int j, int k);
 
 	// A Boundary Condition Capturing Method
-	void generateJumpCondi(int example, GridInfo inputGrid);
+	void generateJumpCondi(int example);
 	void generateLaplaceMatrixJumpCondi();
 	void generateLaplaceVectorJumpCondi();
-	void solveLaplaceEquationJumpCondi(int example, GridInfo inputGrid);
+	void solveLaplaceEquationJumpCondi(int example);
 	void outputResult();
 private:
 
@@ -94,7 +100,61 @@ LaplaceEquationSolver::LaplaceEquationSolver()
 
 LaplaceEquationSolver::~LaplaceEquationSolver()
 {
-	delete laplaceMatrix, laplaceVector, f, jCondition1, jCondition2;
+	delete laplaceMatrix, laplaceVector, f, jCondition1, jCondition2, solution, tempSol;
+}
+
+inline LaplaceEquationSolver::LaplaceEquationSolver(GridInfo inputGrid)
+{
+	grid = inputGrid;
+	if (grid.dimension == 1)
+	{
+		laplaceMatrix = new double[grid.numMatX*grid.numMatX];
+		laplaceVector = new double[grid.numMatX];
+		f = new double[grid.numMatX];
+		jCondition1 = new double[grid.numX];
+		jCondition2 = new double[grid.numX];
+		solution = new double[grid.numX];
+
+		for (int i = 0; i < grid.numMatX*grid.numMatX; i++)
+		{
+			laplaceMatrix[i] = 0;
+		}
+		for (int i = 0; i < grid.numMatX; i++)
+		{
+			laplaceVector[i] = 0;
+			f[i] = 0;
+		}
+		for (int i = 0; i < grid.numX; i++)
+		{
+			jCondition1[i] = 0;
+			jCondition2[i] = 0;
+			solution[i] = 0;
+		}
+	}
+	if (grid.dimension == 2)
+	{
+		laplaceMatrix = new double[grid.numMatX*grid.numMatX*grid.numMatY*grid.numMatY];
+		laplaceVector = new double[grid.numMatX*grid.numMatY];
+		f = new double[grid.numMatX*grid.numMatY];
+		jCondition1 = new double[grid.numX*grid.numY];
+		jCondition2 = new double[grid.numX*grid.numY];
+		solution = new double[grid.numX*grid.numY];
+		for (int i = 0; i < grid.numMatX*grid.numMatX*grid.numMatY*grid.numMatY; i++)
+		{
+			laplaceMatrix[i] = 0;
+		}
+		for (int i = 0; i < grid.numMatX*grid.numMatY; i++)
+		{
+			laplaceVector[i] = 0;
+			f[i] = 0;
+		}
+		for (int i = 0; i < grid.numX*grid.numY; i++)
+		{
+			jCondition1[i] = 0;
+			jCondition2[i] = 0;
+			solution[i] = 0;
+		}
+	}
 }
 
 inline int LaplaceEquationSolver::index(int i, int j)
@@ -117,7 +177,7 @@ inline int LaplaceEquationSolver::indexVec(int i, int j, int k)
 	return i + j*grid.numMatX + k*grid.numMatX*grid.numMatY;
 }
 
-inline void LaplaceEquationSolver::generateJumpCondi(int example, GridInfo inputGrid)
+inline void LaplaceEquationSolver::generateJumpCondi(int example)
 {
 	/////////////////////////////////////////////////////////////////////////////
 	//
@@ -133,35 +193,37 @@ inline void LaplaceEquationSolver::generateJumpCondi(int example, GridInfo input
 	//Y0 = 0; Y1 = 1; numY = 101;
 	//Z0 = 0; Z1 = 1; numZ = 101;
 
-	grid = inputGrid;
 	levelSet = LevelSet(grid);
-	
-	for (int i = 0; i < grid.numX; i++)
+	if (example==1)
 	{
-		levelSet.phi[i] = grid.x[i] - 0.5 - grid.deltaX / 2;
-	}
-
-	leftBdry = 0, rightBdry = 1;
-	f[0] = leftBdry / (grid.deltaX*grid.deltaX);
-	f[grid.numMatX - 1] = rightBdry / (grid.deltaX*grid.deltaX);
-	for (int i = 1; i < grid.numMatX - 1; i++)
-	{
-		f[i] = 0;
-	}
-
-	int centIndex, rightIndex;
-	for (int i = 0; i < grid.numX - 1; i++)
-	{
-		centIndex = i;
-		rightIndex = i + 1;
-		if ((levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0) || (levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0))
+		for (int i = 0; i < grid.numX; i++)
 		{
-			jCondition1[centIndex] = 1;
-			jCondition1[rightIndex] = 1;
-			jCondition2[centIndex] = 0;
-			jCondition2[rightIndex] = 0;
+			levelSet.phi[i] = grid.x[i] - 0.5 - grid.deltaX / 2;
+		}
+
+		leftBdry = 0, rightBdry = 1;
+		f[0] = leftBdry / (grid.deltaX*grid.deltaX);
+		f[grid.numMatX - 1] = rightBdry / (grid.deltaX*grid.deltaX);
+		for (int i = 0; i < grid.numMatX ; i++)
+		{
+			laplaceVector[i] = f[i];
+		}
+
+		int centIndex, rightIndex;
+		for (int i = 0; i < grid.numX - 1; i++)
+		{
+			centIndex = i;
+			rightIndex = i + 1;
+			if ((levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0) || (levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0))
+			{
+				jCondition1[centIndex] = 1;
+				jCondition1[rightIndex] = 1;
+				jCondition2[centIndex] = 0;
+				jCondition2[rightIndex] = 0;
+			}
 		}
 	}
+
 
 }
 
@@ -223,15 +285,31 @@ inline void LaplaceEquationSolver::generateLaplaceVectorJumpCondi()
 	}
 }
 
-inline void LaplaceEquationSolver::solveLaplaceEquationJumpCondi(int example, GridInfo inputGrid)
+inline void LaplaceEquationSolver::solveLaplaceEquationJumpCondi(int example)
 {
+	generateJumpCondi(1);
 
+	generateLaplaceMatrixJumpCondi();
+
+	generateLaplaceVectorJumpCondi();
+
+	sparseLaplaceMatrix = csr(grid.numMatX, grid.numMatX, laplaceMatrix);
+
+	tempSol = CG(sparseLaplaceMatrix, laplaceVector);
+	solution = new double[grid.numX];
+	solution[0] = leftBdry; solution[grid.numX - 1] = rightBdry;
+	for (int i = 0; i < grid.numMatX; i++)
+	{
+		solution[i + 1] = tempSol[i];
+	}
+
+	outputResult();
 }
 
 inline void LaplaceEquationSolver::outputResult()
 {
 	ofstream solutionFile;
-	solutionFile.open("E:\Data/laplace.txt");
+	solutionFile.open("D:\\Data/laplace.txt", ios::binary);
 
 	for (int i = 0; i < grid.numX; i++)
 	{
@@ -239,5 +317,28 @@ inline void LaplaceEquationSolver::outputResult()
 		//solutionFile<<grid.x[i]<< endl;
 	}
 	solutionFile.close();
+
+	//ofstream qwer;
+	//qwer.open("D:\\Data/b1.txt", ios::binary);
+	//for (int i = 0; i < grid.numMatX; i++)
+	//{
+	//	cout<< laplaceVector[i] << endl;
+	//	qwer << laplaceVector[i] << endl;
+	//}
+	//qwer.close();
+
+
+	//ofstream asdf;
+	//asdf.open("D:\\Data/A1.txt", ios::binary);
+	//for (int i = 0; i < grid.numMatX; i++)
+	//{
+	//	for (int j = 0; j < grid.numMatX; j++)
+	//	{
+	//		asdf << laplaceMatrix[i*grid.numMatX + j] << " ";
+	//	}
+	//	asdf << endl;
+	//}
+	//asdf.close();
+
 }
 

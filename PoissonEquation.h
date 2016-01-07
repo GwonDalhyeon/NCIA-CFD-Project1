@@ -7,7 +7,6 @@
 #include "GridInfomation.h"
 #include "LevelSet.h"
 
-
 #include "LinearEquationSolver.h"
 
 class PoissonEquationSolver
