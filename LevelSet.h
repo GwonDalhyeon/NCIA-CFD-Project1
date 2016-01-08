@@ -1,5 +1,7 @@
 #pragma once
 #include "GridInfomation.h"
+#include "Vector2D.h"
+#include "Array2D.h"
 
 class LevelSet
 {
@@ -23,7 +25,7 @@ public:
 
 		if (phi!=nullptr)
 		{
-			delete phi;
+			delete[] phi;
 		}
 
 		if (grid.dimension==1)
@@ -83,8 +85,8 @@ LevelSet::LevelSet(const GridInfo& inputGrid)
 
 LevelSet::~LevelSet()
 {
-	//delete grid;
-	delete phi;
+	//delete[]grid;
+	delete[] phi;
 
 }
 

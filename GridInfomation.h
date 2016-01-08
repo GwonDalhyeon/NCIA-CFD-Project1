@@ -1,5 +1,7 @@
 #pragma once
 #include <cmath>
+#include "Vector2D.h"
+#include "Array2D.h"
 
 using namespace std;
 class GridInfo
@@ -96,7 +98,7 @@ GridInfo::GridInfo(GridInfo & inputGridInfo)
 
 GridInfo::~GridInfo()
 {
-	delete x, y, z;
+	delete[] x, y, z;
 }
 
 void GridInfo::gridInitialization(double x0, double x1, int num1)

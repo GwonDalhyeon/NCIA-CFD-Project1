@@ -1,5 +1,5 @@
 #pragma once
-
+#include <assert.h>
 #include <iostream>
 
 template <class TT>
@@ -18,6 +18,18 @@ public:
 	Vector2D(const TT& inputX, const TT& inputY);
 	Vector2D(const Vector2D<TT>& inputVector);
 	Vector2D(const TT inputValues[2]);
+
+	inline TT operator [](const int& i)
+	{
+		assert(i == 0 || i == 1);
+		return values[i];
+	}
+	
+	inline TT operator ()(const int& i)
+	{
+		assert(i == 0 || i == 1);
+		return values[i];
+	}
 
 	inline void operator = (const Vector2D<TT>& inputVector)
 	{
@@ -90,6 +102,7 @@ public:
 	
 	Vector2D operator / (const Vector2D<TT>& inputVector)
 	{
+		assert(inputVector.x != 0 && inputVector.y != 0);
 		return Vector2D(x / inputVector.x, y / inputVector.y);
 	}
 	
@@ -110,6 +123,7 @@ public:
 	
 	Vector2D operator / (const TT& value)
 	{
+		assert(value != 0);
 		return Vector2D(x / value, y / value);
 	}
 
@@ -187,6 +201,7 @@ inline Vector2D<TT> operator * (const TT& value, const Vector2D<TT>& inputVector
 template<class TT>
 inline Vector2D<TT> operator / (const TT& value, const Vector2D<TT>& inputVector)
 {
+	assert(inputVector.x != 0 && inputVector.y != 0);
 	return Vector2D<TT>(value / inputVector.x, value / inputVector.y);
 }
 

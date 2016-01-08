@@ -1,28 +1,17 @@
 #include "LaplaceEquation.h"
 #include "PoissonEquation.h"
-#include "Vector2D.h"
-#include "Array2D.h"
-
-
 
 void main()
 {
-	Vector2D<double> testVector1(-3, 4);
-	//cout << testVector1 << "\n";
-	//cout << testVector1.magnitude() << "\n";
-	Vector2D<double> testVector2 = normalize(testVector1);
-	Vector2D<double> testVector3 = testVector1;
-	testVector3.normalize();
-	cout << testVector1 << "\n";
-	cout << testVector2 << "\n";
-	cout << testVector3 << "\n";
 
-	//testVector2 =100.0 + testVector1;
-	//Vector2D<double> testVector3 = 1.0 /testVector1;
-	//testVector1 += 2;
-	//cout << testVector1.x << " " << testVector1.y << "\n";
-	//cout << testVector2.x << " " << testVector2.y << "\n";
-	//cout << testVector3.x << " " << testVector3.y << "\n";
+	Array2D<int> testArray(2, 4);
+	testArray = 2;
+	cout << testArray(0,0) << "\n";
+	Array2D<int> testArray2 = testArray;
+	testArray2 = testArray;
+	
+	Vector2D<double> testVector(1,3);
+	Vector2D<double> testVector1 = testVector;
 
 
 	//GridInfo testGrid1d(0.0, 1.0, 101);

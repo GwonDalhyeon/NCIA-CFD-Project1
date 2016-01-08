@@ -3,6 +3,8 @@
 #include <iostream>
 #include <time.h>
 
+#include "Vector2D.h"
+#include "Array2D.h"
 #include "CSR.h"
 #include "GridInfomation.h"
 #include "LevelSet.h"
@@ -100,7 +102,7 @@ LaplaceEquationSolver::LaplaceEquationSolver()
 
 LaplaceEquationSolver::~LaplaceEquationSolver()
 {
-	delete laplaceMatrix, laplaceVector, f, jCondition1, jCondition2, solution, tempSol;
+	delete[] laplaceMatrix, laplaceVector, f, jCondition1, jCondition2, solution, tempSol;
 }
 
 inline LaplaceEquationSolver::LaplaceEquationSolver(GridInfo inputGrid)

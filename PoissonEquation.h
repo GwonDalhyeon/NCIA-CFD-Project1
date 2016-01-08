@@ -3,6 +3,8 @@
 #include <iostream>
 #include <time.h>
 
+#include "Vector2D.h"
+#include "Array2D.h"
 #include "CSR.h"
 #include "GridInfomation.h"
 #include "LevelSet.h"
@@ -107,7 +109,7 @@ PoissonEquationSolver::PoissonEquationSolver()
 
 PoissonEquationSolver::~PoissonEquationSolver()
 {
-	delete poissonMatrix, poissonVector, beta, f, jCondition1, jCondition2, solution, tempSol;
+	delete[] poissonMatrix, poissonVector, beta, f, jCondition1, jCondition2, solution, tempSol;
 }
 
 PoissonEquationSolver::PoissonEquationSolver(GridInfo inputGrid)
