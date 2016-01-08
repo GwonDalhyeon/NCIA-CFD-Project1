@@ -7,6 +7,60 @@ using namespace std;
 class GridInfo
 {
 public:
+	union
+	{
+		struct { int iRes, jRes; };
+		int res[2];
+	};
+
+	union
+	{
+		struct { int iStart, jStart, iEnd, jEnd; };
+		struct { int ijStart[2], ijEnd[2]; };
+	};
+
+	union
+	{
+		struct { double xMin, yMin, xMax, yMax; };
+		struct { double xyMin[2], xyMax[2]; };
+	};
+
+	union
+	{
+		struct { double dx, dy; };
+		double dxdy[2];
+	};
+
+	union // 2dx, 2dy
+	{
+		struct { double twodx, twody; };
+		double twodxdy[2];
+	};
+
+	union // dx^2, dy^2
+	{
+		struct { double dx2, dy2; };
+		double dxdy2[2];
+	};
+
+	union // 1/dx, 1/dy
+	{
+		struct { double oneOverdx, oneOverdy; };
+		double oneOverdxdy[2];
+	};
+
+	union // 1/2dx, 1/2dy
+	{
+		struct { double oneOver2dx, oneOver2dy; };
+		double oneOverdxdy[2];
+	};
+
+	union // 1/dx^2, 1/dy^2
+	{
+		struct { double oneOverdx2, oneOverdy2; };
+		double oneOverdxdy2[2];
+	};
+
 	double X0, X1, Y0, Y1, Z0, Z1;
 	double deltaX, deltaY, deltaZ;
 	int numX, numY, numZ;

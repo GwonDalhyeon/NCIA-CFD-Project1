@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 #include <iostream>
+#include "Grid2D.h"
 
 template <class TT>
 class Array2D
@@ -12,25 +13,29 @@ public:
 		struct { int ijStart[2], ijEnd[2]; };
 	};
 
-	int iLength, jLength;
-	int ijLength;
+	int iRes, jRes;
+	int ijRes;
 	TT* values;
 
 	Array2D();
 	~Array2D();
 
-	Array2D(const int& inputiLength);
-	Array2D(const int& inputiLength, const int& inputjLength);
-	Array2D(const int& inputiStart, const int& inputiEnd, const int& inputiLength);
-	Array2D(const int& inputiStart, const int& inputiLength, const int& inputjStart, const int& inputjLength);
-	Array2D(const Array2D<TT>& inputArray);
+	Array2D(const int& ipiRes);
+	Array2D(const int& ipiRes, const int& ipjRes);
+	Array2D(const int& ipiStart, const int& ipiEnd, const int& ipiRes);
+	Array2D(const int& ipiStart, const int& ipiRes, const int& ipjStart, const int& ipjRes);
+	Array2D(const Array2D<TT>& ipArray);
+
+	Array2D(const Grid2D& ipGrid);
+
+	void initialize(const int& iS, const int& iE, const int& iL, const int& jS, const int& jE, const int& jL, const int& ijL);
 	void initialValues();
 
 	inline int index(const int& i, const int& j)
 	{
 		assert(i >= iStart && i <=iEnd);
 		assert(j >= jStart && j <=jEnd);
-		return i + j*iLength;
+		return i + j*iRes;
 	}
 
 	inline TT& operator [](const int& i) const
@@ -61,7 +66,7 @@ public:
 	
 	inline void operator =(const double& constant)
 	{
-		for (int i = 0; i < ijLength; i++)
+		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] = constant;
 		}
@@ -69,7 +74,7 @@ public:
 
 	inline void operator *=(const double& constant)
 	{
-		for (int i = 0; i < ijLength; i++)
+		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] *= constant;
 		}
@@ -77,7 +82,7 @@ public:
 
 	inline void operator +=(const double& constant)
 	{
-		for (int i = 0; i < ijLength; i++)
+		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] += constant;
 		}
@@ -85,7 +90,7 @@ public:
 
 	inline void operator -=(const double& constant)
 	{
-		for (int i = 0; i < ijLength; i++)
+		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] -= constant;
 		}
@@ -95,77 +100,70 @@ public:
 	{
 		assert(constant != 0);
 		
-		for (int i = 0; i < ijLength; i++)
+		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] *= 1/constant;
 		}
 	}
 
-	inline void operator =(const Array2D<TT>& inputArray)
+	inline void operator =(const Array2D<TT>& ipArray)
 	{
 		if (values != nullptr)
 		{
 			delete[] values;
 		}
+		initialize(ipArray.iStart, ipArray.iEnd, ipArray.iRes, ipArray.jStart, ipArray.jEnd, ipArray.jRes, ipArray.ijRes);
+
+		values = new TT[ijRes];
+
+		for (int i = 0; i < ijRes; i++)
+		{
+			values[i] = ipArray.values[i];
+		}
+	}
+
+	Array2D operator + (const Array2D<TT>& ipArray)
+	{
+		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 		
-		iStart = inputArray.iStart;
-		iEnd = inputArray.iEnd;
-		iLength = inputArray.iLength;
-		jStart = inputArray.jStart;
-		jEnd = inputArray.jEnd;
-		jLength = inputArray.jLength;
-		ijLength = inputArray.ijLength;
-
-		values = new TT[ijLength];
-
-		for (int i = 0; i < ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			values[i] = inputArray.values[i];
-		}
-	}
-
-	Array2D operator + (const Array2D<TT>& inputArray)
-	{
-		Array2D<TT> tempArray(inputArray.iStart, inputArray.iLength, inputArray.jStart, inputArray.jLength);
-		
-		for (int i = 0; i < tempArray.ijLength; i++)
-		{
-			tempArray.values[i] = value[i] + inputArray.values[i];
+			tempArray.values[i] = value[i] + ipArray.values[i];
 		}
 		return tempArray;
 	}
 
-	Array2D operator - (const Array2D<TT>& inputArray)
+	Array2D operator - (const Array2D<TT>& ipArray)
 	{
-		Array2D<TT> tempArray(inputArray.iStart, inputArray.iLength, inputArray.jStart, inputArray.jLength);
+		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			tempArray.values[i] = value[i] - inputArray.values[i];
+			tempArray.values[i] = value[i] - ipArray.values[i];
 		}
 		return tempArray;
 	}
 
-	Array2D operator * (const Array2D<TT>& inputArray)
+	Array2D operator * (const Array2D<TT>& ipArray)
 	{
-		Array2D<TT> tempArray(inputArray.iStart, inputArray.iLength, inputArray.jStart, inputArray.jLength);
+		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			tempArray.values[i] = value[i] * inputArray.values[i];
+			tempArray.values[i] = value[i] * ipArray.values[i];
 		}
 		return tempArray;
 	}
 
-	Array2D operator / (const Array2D<TT>& inputArray)
+	Array2D operator / (const Array2D<TT>& ipArray)
 	{
-		Array2D<TT> tempArray(inputArray.iStart, inputArray.iLength, inputArray.jStart, inputArray.jLength);
+		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			if (inputArray.values[i]!=0)
+			if (ipArray.values[i]!=0)
 			{
-				tempArray.values[i] = value[i] / inputArray.values[i];
+				tempArray.values[i] = value[i] / ipArray.values[i];
 			}
 		}
 		return tempArray;
@@ -175,9 +173,9 @@ public:
 	{
 		Array2D<TT> tempArray = this;
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			tempArray.values[i] = constant + inputArray.values[i];
+			tempArray.values[i] = constant + ipArray.values[i];
 		}
 		return tempArray;
 	}
@@ -186,9 +184,9 @@ public:
 	{
 		Array2D<TT> tempArray = this;
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			tempArray.values[i] = inputArray.values[i] - constant;
+			tempArray.values[i] = ipArray.values[i] - constant;
 		}
 		return tempArray;
 	}
@@ -197,9 +195,9 @@ public:
 	{
 		Array2D<TT> tempArray = this;
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			tempArray.values[i] = inputArray.values[i] - constant;
+			tempArray.values[i] = ipArray.values[i] - constant;
 		}
 		return tempArray;
 	}
@@ -209,9 +207,9 @@ public:
 		assert(constant != 0);
 		Array2D<TT> tempArray = this;
 
-		for (int i = 0; i < tempArray.ijLength; i++)
+		for (int i = 0; i < tempArray.ijRes; i++)
 		{
-			tempArray.values[i] = inputArray.values[i] - constant;
+			tempArray.values[i] = ipArray.values[i] - constant;
 		}
 		return tempArray;
 	}
@@ -235,122 +233,112 @@ Array2D<TT>::~Array2D()
 }
 
 template<class TT>
-inline Array2D<TT>::Array2D(const int & inputiLength)
+inline Array2D<TT>::Array2D(const int & ipiRes)
 {
 	if (values != nullptr)
 	{
 		delete[] values;
 	}
-	iStart		= 0;
-	iEnd		= inputiLength - 1;
-	jStart		= 0;
-	jEnd		= 0;
-	iLength		= inputiLength;
-	jLength		= 0;
-	ijLength	= iLength;
+	initialize(0, ipiRes - 1, ipiRes, 0, 0, 0, ipiRes);
 
-	assert(iLength > 0);
+	assert(iRes > 0);
 
-	values		= new TT[ijLength];
+	values		= new TT[ijRes];
 
 	initialValues();
 }
 
 template<class TT>
-inline Array2D<TT>::Array2D(const int & inputiLength, const int& inputjLength)
+inline Array2D<TT>::Array2D(const int & ipiRes, const int& ipjRes)
 {
 	if (values!=nullptr)
 	{
 		delete[] values;
 	}
-	iStart		= 0;
-	iEnd		= inputiLength-1;
-	jStart		= 0;
-	jEnd		= inputjLength-1;
-	iLength		= inputiLength;
-	jLength		= inputjLength;
-	ijLength	= iLength*jLength;
 
-	assert(iLength > 0 && jLength > 0);
+	initialize(0, ipiRes - 1, ipiRes, 0, ipjRes - 1, ipjRes, ipiRes*ipjRes);
 
-	values		= new TT[ijLength];
+	assert(iRes > 0 && jRes > 0);
+
+	values		= new TT[ijRes];
 
 	initialValues();
 }
 
 template<class TT>
-inline Array2D<TT>::Array2D(const int & inputiStart, const int & inputiEnd, const int & inputiLength)
+inline Array2D<TT>::Array2D(const int & ipiStart, const int & ipiEnd, const int & ipiRes)
 {
 	if (values != nullptr)
 	{
 		delete[] values;
 	}
-	iStart		= inputiStart;
-	iEnd		= inputiEnd;
-	iLength		= inputiLength;
-	jStart		= 0;
-	jEnd		= 0;
-	jLength		= 0;
-	ijLength	= iLength;
 
-	assert(iLength > 0 && iEnd == iStart + iLength - 1);
+	initialize(ipiStart, ipiEnd, ipiRes, 0, 0, 0, ipiRes);
 
-	values = new TT[ijLength];
+	assert(iRes > 0 && iEnd == iStart + iRes - 1);
+
+	values = new TT[ijRes];
 
 	initialValues();
 }
 
 template<class TT>
-inline Array2D<TT>::Array2D(const int & inputiStart, const int & inputiLength, const int & inputjStart, const int & inputjLength)
+inline Array2D<TT>::Array2D(const int & ipiStart, const int & ipiRes, const int & ipjStart, const int & ipjRes)
 {
 	if (values != nullptr)
 	{
 		delete[] values;
 	}
-	iStart		= inputiStart;
-	iEnd		= inputiStart + inputiLength - 1;
-	iLength		= inputiLength;
-	jStart		= inputjStart;
-	jEnd		= inputjStart + inputjLength - 1;
-	jLength		= inputjLength;
-	ijLength	= iLength*jLength;
+	initialize(ipiStart, ipiStart + ipiRes - 1, ipiRes, ipjStart, ipjStart + ipjRes - 1, ipjRes, iRes*jRes);
 
-	assert(iLength > 0 && iEnd == iStart + iLength - 1);
-	assert(jLength > 0 && jEnd == jStart + jLength - 1);
+	assert(iRes > 0 && iEnd == iStart + iRes - 1);
+	assert(jRes > 0 && jEnd == jStart + jRes - 1);
 
-	values = new TT[ijLength];
+	values = new TT[ijRes];
 
 	initialValues();
 }
 
 template<class TT>
-inline Array2D<TT>::Array2D(const Array2D<TT>& inputArray)
+inline Array2D<TT>::Array2D(const Array2D<TT>& ipArray)
 {	
 	if (values != nullptr)
 	{
 		delete[] values;
 	}
 
-	iStart = inputArray.iStart;
-	iEnd = inputArray.iEnd;
-	iLength = inputArray.iLength;
-	jStart = inputArray.jStart;
-	jEnd = inputArray.jEnd;
-	jLength = inputArray.jLength;
-	ijLength = inputArray.ijLength;
+	initialize(ipArray.iStart, ipArray.iEnd, ipArray.iRes, ipArray.jStart, ipArray.jEnd, ipArray.jRes, ipArray.ijRes);
 
-	values = new TT[ijLength];
+	values = new TT[ijRes];
 
-	for (int i = 0; i < ijLength; i++)
+	for (int i = 0; i < ijRes; i++)
 	{
-		values[i] = inputArray.values[i];
+		values[i] = ipArray.values[i];
 	}
+}
+
+template<class TT>
+inline Array2D<TT>::Array2D(const Grid2D & ipGrid)
+{
+	initialize(ipGrid.iStart, ipGrid.iRes, ipGrid.jStart, ipGrid.jRes);
+}
+
+template<class TT>
+inline void Array2D<TT>::initialize(const int & iS, const int & iE, const int & iL, const int & jS, const int & jE, const int & jL, const int& ijL)
+{
+	iStart = iS;
+	iEnd = iE;
+	iRes = iL;
+	jStart = jS;
+	jEnd = jE;
+	jRes = jL;
+	ijRes = ijL;
 }
 
 template<class TT>
 inline void Array2D<TT>::initialValues()
 {
-	for (int i = 0; i < ijLength; i++)
+	for (int i = 0; i < ijRes; i++)
 	{
 		values[i] = 0;
 	}

@@ -1,17 +1,23 @@
 #include "LaplaceEquation.h"
 #include "PoissonEquation.h"
+#include "Grid2D.h"
 
 void main()
 {
 
-	Array2D<int> testArray(2, 4);
-	testArray = 2;
-	cout << testArray(0,0) << "\n";
-	Array2D<int> testArray2 = testArray;
-	testArray2 = testArray;
+	Grid2D grid(1, 2, 100, 3, 5, 400);
+	cout << grid << "\n";
 	
+
+
+	//Array2D<int> testArray(2, 4);
+	//testArray = 2;
+	//cout << testArray(0,0) << "\n";
+	//Array2D<int> testArray2 = testArray;
+	//testArray2 = testArray;
+	//
 	Vector2D<double> testVector(1,3);
-	Vector2D<double> testVector1 = testVector;
+	//Vector2D<double> testVector1 = testVector;
 
 
 	//GridInfo testGrid1d(0.0, 1.0, 101);
