@@ -31,11 +31,18 @@ public:
 	void initialize(const int& iS, const int& iE, const int& iL, const int& jS, const int& jE, const int& jL, const int& ijL);
 	void initialValues();
 
-	inline int index(const int& i, const int& j)
+	const int index(const Vector2D<int>& ipVector) const
+	{
+		assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);
+		assert(ipVector[1] >= jStart && ipVector[1] <= jEnd);
+		return (ipVector[0] - iStart) + (ipVector[1] - jStart)*iRes;
+	}
+
+	const int index(const int& i, const int& j) const
 	{
 		assert(i >= iStart && i <=iEnd);
 		assert(j >= jStart && j <=jEnd);
-		return i + j*iRes;
+		return (i - iStart) + (j - jStart)*iRes;
 	}
 
 	inline TT& operator [](const int& i) const
@@ -45,7 +52,6 @@ public:
 	}
 	inline TT& operator ()(const int& i)const
 	{
-		iStart;
 		assert(i >= iStart && i <=iEnd);
 		return values[i];
 	}
@@ -57,11 +63,20 @@ public:
 	//	return values[index(i,j)];
 	//}
 
-	inline TT& operator ()(const int& i, const int& j) 
+	inline TT& operator ()(const int& i, const int& j) const
 	{
 		assert(i >= iStart && i <=iEnd);
 		assert(j >= jStart && j <=jEnd);
+
 		return values[index(i, j)];
+	}
+
+	inline TT& operator ()(const Vector2D<int>& ipVector) const
+	{
+		assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);
+		assert(ipVector[1] >= jStart && ipVector[1] <= jEnd);
+
+		return values[index(ipVector[0], ipVector[1])];
 	}
 	
 	inline void operator =(const double& constant)
@@ -320,7 +335,19 @@ inline Array2D<TT>::Array2D(const Array2D<TT>& ipArray)
 template<class TT>
 inline Array2D<TT>::Array2D(const Grid2D & ipGrid)
 {
-	initialize(ipGrid.iStart, ipGrid.iRes, ipGrid.jStart, ipGrid.jRes);
+	//if (values != nullptr)
+	//{
+	//	delete[] values;
+	//}
+
+	initialize(ipGrid.iStart, ipGrid.iEnd, ipGrid.iRes, ipGrid.jStart, ipGrid.jEnd, ipGrid.jRes, ipGrid.iRes*ipGrid.jRes);
+
+	values = new TT[ijRes];
+
+	for (int i = 0; i < ijRes; i++)
+	{
+		values[i] = 0;
+	}
 }
 
 template<class TT>

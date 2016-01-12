@@ -1,24 +1,22 @@
 #include "LaplaceEquation.h"
 #include "PoissonEquation.h"
-#include "Grid2D.h"
+#include "Field2D.h"
+#include "VectorND.h"
+#include "CSR.h"
 
 void main()
 {
-
 	Grid2D grid(1, 2, 100, 3, 5, 400);
-	cout << grid << "\n";
-	
+	//Field2D<double> field(grid);
+	//cout << field(0, 0) << endl;
 
-
-	//Array2D<int> testArray(2, 4);
-	//testArray = 2;
-	//cout << testArray(0,0) << "\n";
-	//Array2D<int> testArray2 = testArray;
-	//testArray2 = testArray;
-	//
-	Vector2D<double> testVector(1,3);
-	//Vector2D<double> testVector1 = testVector;
-
+	Array2D<double> testArray(2, 4);
+	testArray(0, 0) = 1;
+	testArray(0, 1) = 4;
+	testArray(1, 3) = 7;
+	CSR<double> testCSR(testArray);
+	cout << testCSR << endl;
+	cout <<1 << endl;
 
 	//GridInfo testGrid1d(0.0, 1.0, 101);
 	//LaplaceEquationSolver testLaplace = LaplaceEquationSolver(testGrid1d);

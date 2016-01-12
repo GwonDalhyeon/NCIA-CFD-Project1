@@ -72,7 +72,7 @@ public:
 
 	Grid2D(const double& ipXMin, const double& ipXmax, const int& ipiRes, const double& ipYMin, const double& ipYmax, const int& ipjRes);
 	Grid2D(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
-	Grid2D(const const Grid2D& ipGrid);
+	Grid2D(const Grid2D& ipGrid);
 
 	void initialize(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
 
@@ -114,7 +114,7 @@ inline Grid2D::Grid2D(const double & ipXMin, const double & ipXmax, const int & 
 	initialize(ipXMin, ipXmax, ipiStart, ipiRes, ipYMin, ipYmax, ipjStart, ipjRes);
 }
 
-inline Grid2D::Grid2D(const const Grid2D & ipGrid)
+inline Grid2D::Grid2D(const Grid2D & ipGrid)
 {
 	initialize(ipGrid.xMin,ipGrid.xMax,ipGrid.iStart,ipGrid.iRes,ipGrid.yMin,ipGrid.yMax,ipGrid.jStart,ipGrid.jRes);
 }

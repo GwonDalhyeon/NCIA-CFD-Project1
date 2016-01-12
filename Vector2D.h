@@ -19,16 +19,22 @@ public:
 	Vector2D(const Vector2D<TT>& inputVector);
 	Vector2D(const TT inputValues[2]);
 
-	inline TT operator [](const int& i)
+	inline TT operator [](const int& i) const
 	{
 		assert(i == 0 || i == 1);
 		return values[i];
 	}
 	
-	inline TT operator ()(const int& i)
+	inline TT operator ()(const int& i) const
 	{
 		assert(i == 0 || i == 1);
 		return values[i];
+	}
+
+	inline void operator = (const TT& constant)
+	{
+		x = constant;
+		y = constant;
 	}
 
 	inline void operator = (const Vector2D<TT>& inputVector)

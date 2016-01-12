@@ -3,9 +3,7 @@
 #include <iostream>
 #include <time.h>
 
-#include "Vector2D.h"
-#include "Array2D.h"
-#include "CSR.h"
+#include "CSR1.h"
 #include "GridInfomation.h"
 #include "LevelSet.h"
 

@@ -3,79 +3,71 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
-//#include <math.h>
+
+#include "Array2D.h"
+#include "VectorND.h"
 
 using namespace std;
-
-class csr
+template <class TT>
+class CSR
 {
 public:
-	double* val;
-	double* col;
-	int* indptr;
+	//Array2D<TT> values;
+	//Array2D<int> columns;
+	//Array2D<int> indPrt;
+
+	VectorND<TT> values;
+	VectorND<int> columns;
+	VectorND<int> indPrt;
+	
 	int colNum;
 	int rowNum;
+	int valueNum;
+	
+	CSR();
+	~CSR();
 
-	csr(int num1,int num2, double* matrix);
+	CSR(const Array2D<TT>& ipArray);
 
-	csr();
-	~csr();
-
-	csr& operator=(const csr& inputCsr)
+	inline void operator = (const CSR<TT>& ipCSR)
 	{
-		if (val != nullptr)
-		{
-			delete val;
-		}
-		if (col != nullptr)
-		{
-			delete col;
-		}
-		if (indptr != nullptr)
-		{
-			delete indptr;
-		}
+		values = ipCSR.values;
+		columns = ipCSR.columns;
+		indPrt = ipCSR.indPrt;
 
-		colNum = inputCsr.colNum;
-		rowNum = inputCsr.rowNum;
-
-		indptr = new int[rowNum + 1];
-
-		for (int i = 0; i < rowNum+1; i++)
-		{
-			indptr[i] = inputCsr.indptr[i];
-		}
-		int tempIndex = indptr[rowNum];
-
-		val = new double[tempIndex];
-		col = new double[tempIndex];
-
-		for (int i = 0; i < tempIndex; i++)
-		{
-			val[i] = inputCsr.val[i];
-			col[i] = inputCsr.col[i];
-		}
-		return *this;
+		colNum = ipCSR.colNum;
+		rowNum = ipCSR.rowNum;
+		valueNum = ipCSR.valueNum;
 	}
 
 private:
 
 };
-csr::csr()
+template <class TT>
+CSR<TT>::CSR()
 {
-
 }
-csr::csr(int num1,int num2, double* matrix)
-{
-	rowNum = num1;
-	colNum = num2;
-	double* tempVal = new double[int(floor(sqrt(double(rowNum*colNum))))*10];
-	double* tempCol = new double[int(floor(sqrt(double(rowNum*colNum))))*10];
-	indptr = new int[rowNum+1];
 
-	for (int i = 0; i < rowNum+1; i++)
+template <class TT>
+CSR<TT>::~CSR()
+{
+	cout << "delete CSR" << endl;
+}
+
+template<class TT>
+inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
+{
+	rowNum = ipArray.iRes;
+	colNum = ipArray.jRes;
+	indPrt = VectorND<int>(rowNum);
+
+	TT* tempVal = new double[int(floor(sqrt(double(rowNum*colNum)))) * 10];
+	int* tempCol = new int[int(floor(sqrt(double(rowNum*colNum)))) * 10];
+	
+
+	for (int i = 0; i < rowNum + 1; i++)
 	{
-		indptr[i] = -1;
+		indPrt.values[i] = -1;
 
 	}
 	int tempIndex = 0;
@@ -85,33 +77,40 @@ csr::csr(int num1,int num2, double* matrix)
 	{
 		for (int j = 0; j < colNum; j++)
 		{
-			if (matrix[i*colNum + j] != 0)
+			if (ipArray(i,j) != 0)
 			{
-				tempVal[tempIndex] = matrix[i*colNum + j];
+				tempVal[tempIndex] = ipArray(i, j);
 				tempCol[tempIndex] = j;
-				if (indptr[i]<0)
+				if (indPrt.values[i]<0)
 				{
-					indptr[i] = tempIndex;
+					indPrt.values[i] = tempIndex;
 				}
 				tempIndex = tempIndex + 1;
 			}
 		}
 	}
-	indptr[rowNum] = tempIndex;
+	valueNum = tempIndex;
+	//indPrt.values[rowNum] = tempIndex;
 
-	val = new double[tempIndex];
-	col = new double[tempIndex];
+	values = VectorND<TT>(valueNum);
+	columns = VectorND<int>(valueNum);
 
-	for (int i = 0; i < tempIndex; i++)
+	for (int i = 0; i < valueNum; i++)
 	{
-		val[i] = tempVal[i];
-		col[i] = tempCol[i];
+		values.values[i] = tempVal[i];
+		columns.values[i] = tempCol[i];
 	}
 
 	delete[] tempVal, tempCol;
 }
 
-csr::~csr()
+template<class TT>
+inline std::ostream& operator<<(std::ostream& output, const CSR<TT>& ipCSR)
 {
-	delete[] val, col, indptr;
+	output << "CSR" << endl;
+	output << "- colNum = " << ipCSR.colNum << endl;
+	output << "- rowNum = " << ipCSR.rowNum << endl;
+	output << "- valueNum = " << ipCSR.valueNum << endl;
+
+	return output;
 }

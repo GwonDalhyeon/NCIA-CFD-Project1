@@ -1,9 +1,11 @@
 #pragma once
+#include "CSR1.h"
+
 #include "CSR.h"
 
 using namespace std;
-
-double* CG(csr& A, double* b)
+template <class TT>
+double* CG(const CSR<TT>& A, double* b)
 {
 	int num = A.colNum;
 	double tolerance = 1000 * DBL_EPSILON;

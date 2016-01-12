@@ -1,7 +1,5 @@
 #pragma once
 #include "GridInfomation.h"
-#include "Vector2D.h"
-#include "Array2D.h"
 
 class LevelSet
 {
