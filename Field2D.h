@@ -2,6 +2,7 @@
 
 #include "Grid2D.h"
 #include "Array2D.h"
+#include "VectorND.h"
 
 template<class TT>
 class Field2D
@@ -31,6 +32,12 @@ public:
 	void initialize(const Grid2D& ipGrid);
 	void initialize(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
 	
+	inline TT& operator [](const int& i) const
+	{
+		assert(i >= 0 && i < iRes*jRes);
+		return dataArray(i);
+	}
+
 	const int index(const Vector2D<int>& ipVector) const
 	{
 		assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);

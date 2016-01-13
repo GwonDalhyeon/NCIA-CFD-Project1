@@ -47,12 +47,12 @@ public:
 
 	inline TT& operator [](const int& i) const
 	{
-		assert(i >= iStart && i <=iEnd);
+		//assert(i >= iStart && i <=iEnd);
 		return values[i];
 	}
 	inline TT& operator ()(const int& i)const
 	{
-		assert(i >= iStart && i <=iEnd);
+		//assert(i >= iStart && i <=iEnd);
 		return values[i];
 	}
 
@@ -302,13 +302,13 @@ inline Array2D<TT>::Array2D(const int & ipiStart, const int & ipiRes, const int 
 {
 	if (values != nullptr)
 	{
-		delete[] values;
+		values = nullptr;
+		//delete[] values;
 	}
-	initialize(ipiStart, ipiStart + ipiRes - 1, ipiRes, ipjStart, ipjStart + ipjRes - 1, ipjRes, iRes*jRes);
+	initialize(ipiStart, ipiStart + ipiRes - 1, ipiRes, ipjStart, ipjStart + ipjRes - 1, ipjRes, ipiRes*ipjRes);
 
 	assert(iRes > 0 && iEnd == iStart + iRes - 1);
 	assert(jRes > 0 && jEnd == jStart + jRes - 1);
-
 	values = new TT[ijRes];
 
 	initialValues();

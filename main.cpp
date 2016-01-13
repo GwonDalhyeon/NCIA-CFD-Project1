@@ -1,23 +1,22 @@
-#include "LaplaceEquation.h"
-#include "PoissonEquation.h"
 #include "Field2D.h"
 #include "VectorND.h"
 #include "CSR.h"
 
+#include "PoissonSolver.h"
+
 void main()
 {
-	Grid2D grid(1, 2, 100, 3, 5, 400);
-	//Field2D<double> field(grid);
-	//cout << field(0, 0) << endl;
+	Grid2D grid(0,1,10, 0,1,20);
 
-	Array2D<double> testArray(2, 4);
-	testArray(0, 0) = 1;
-	testArray(0, 1) = 4;
-	testArray(1, 3) = 7;
-	CSR<double> testCSR(testArray);
-	cout << testCSR << endl;
-	cout <<1 << endl;
+	Grid2D testGrid2d(0.0, 1.0, 101, 0.0, 1.0, 101);
+	PoissonSolver testPoisson2d;
+	testPoisson2d.solvePoissonJumpCondi(2, testGrid2d);
 
+
+	//CSR<double> testCSR();
+	//cout << testCSR << endl;
+	//cout <<1 << endl;
+	
 	//GridInfo testGrid1d(0.0, 1.0, 101);
 	//LaplaceEquationSolver testLaplace = LaplaceEquationSolver(testGrid1d);
 	//testLaplace.solveLaplaceEquationJumpCondi(1);

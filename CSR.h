@@ -12,10 +12,6 @@ template <class TT>
 class CSR
 {
 public:
-	//Array2D<TT> values;
-	//Array2D<int> columns;
-	//Array2D<int> indPrt;
-
 	VectorND<TT> values;
 	VectorND<int> columns;
 	VectorND<int> indPrt;
@@ -51,7 +47,6 @@ CSR<TT>::CSR()
 template <class TT>
 CSR<TT>::~CSR()
 {
-	cout << "delete CSR" << endl;
 }
 
 template<class TT>
@@ -59,15 +54,15 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 {
 	rowNum = ipArray.iRes;
 	colNum = ipArray.jRes;
-	indPrt = VectorND<int>(rowNum);
+	indPrt = VectorND<int>(rowNum+1);
 
-	TT* tempVal = new double[int(floor(sqrt(double(rowNum*colNum)))) * 10];
+	TT* tempVal = new TT[int(floor(sqrt(double(rowNum*colNum)))) * 10];
 	int* tempCol = new int[int(floor(sqrt(double(rowNum*colNum)))) * 10];
 	
 
-	for (int i = 0; i < rowNum + 1; i++)
+	for (int i = 0; i < rowNum+1; i++)
 	{
-		indPrt.values[i] = -1;
+		indPrt[i] = -1;
 
 	}
 	int tempIndex = 0;
@@ -77,30 +72,29 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 	{
 		for (int j = 0; j < colNum; j++)
 		{
-			if (ipArray(i,j) != 0)
+			if (ipArray(i+ipArray.iStart,j+ipArray.jStart) != 0)
 			{
-				tempVal[tempIndex] = ipArray(i, j);
+				tempVal[tempIndex] = ipArray(i + ipArray.iStart, j + ipArray.jStart);
 				tempCol[tempIndex] = j;
-				if (indPrt.values[i]<0)
+				if (indPrt[i]<0)
 				{
-					indPrt.values[i] = tempIndex;
+					indPrt[i] = tempIndex;
 				}
 				tempIndex = tempIndex + 1;
 			}
 		}
 	}
 	valueNum = tempIndex;
-	//indPrt.values[rowNum] = tempIndex;
+	indPrt[rowNum] = tempIndex;
 
 	values = VectorND<TT>(valueNum);
 	columns = VectorND<int>(valueNum);
 
 	for (int i = 0; i < valueNum; i++)
 	{
-		values.values[i] = tempVal[i];
-		columns.values[i] = tempCol[i];
+		values[i] = tempVal[i];
+		columns[i] = tempCol[i];
 	}
-
 	delete[] tempVal, tempCol;
 }
 

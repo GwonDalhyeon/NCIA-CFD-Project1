@@ -17,13 +17,13 @@ public:
 	VectorND(const VectorND<TT>& ipVector);
 	VectorND(const TT* ipValues);
 
-	inline TT operator [](const int& i) const
+	inline TT& operator [](const int& i) const
 	{
 		assert(i >= 0 || i < iLength);
 		return values[i];
 	}
 
-	inline TT operator ()(const int& i) const
+	inline TT& operator ()(const int& i) const
 	{
 		assert(i >= 0 || i < iLength);
 		return values[i];
@@ -39,7 +39,6 @@ public:
 
 	inline void operator = (const VectorND<TT>& ipVector)
 	{
-		//assert(iLength == ipVector.iLength);
 		iLength = ipVector.iLength;
 		
 		if (values != nullptr)
@@ -223,6 +222,7 @@ public:
 	}
 
 	TT magnitude();
+	TT magnitude2();
 
 	void normalize();
 
@@ -241,11 +241,8 @@ VectorND<TT>::~VectorND()
 {
 	if (iLength > 0 && values!=nullptr)
 	{
-		cout << iLength << endl;
-		cout << values[0] << endl;
 		delete[] values;
-	}
-	
+	}	
 }
 
 template<class TT>
@@ -253,6 +250,10 @@ inline VectorND<TT>::VectorND(const int & ipLength)
 {
 	values = new TT[ipLength];
 	iLength = ipLength;
+	for (int i = 0; i < iLength; i++)
+	{
+		values[i] = 0;
+	}
 	iEnd = ipLength - 1;
 }
 
@@ -261,11 +262,11 @@ inline VectorND<TT>::VectorND(const VectorND<TT>& ipVector)
 {
 	if (values != nullptr)
 	{
-		delete[] values;
+		values = nullptr;
 	}
 
-	assert(iLength > 0);
-
+	assert(ipVector.iLength > 0);
+	iLength = ipVector.iLength;
 	values = new TT[iLength];
 
 	for (int i = 0; i < iLength; i++)
@@ -276,15 +277,21 @@ inline VectorND<TT>::VectorND(const VectorND<TT>& ipVector)
 
 
 template<class TT>
-inline TT VectorND<TT>::magnitude()
+inline TT VectorND<TT>::magnitude2()
 {
-	double mag2 = 0.0;
+	TT mag2 = 0;
 
 	for (int i = 0; i < iLength; i++)
 	{
 		mag2 = mag2 + values[i] * values[i];
 	}
-	return TT(sqrt(mag2));
+	return TT(mag2);
+}
+
+template<class TT>
+inline TT VectorND<TT>::magnitude()
+{
+	return TT(sqrt(magnitude2()));
 }
 
 template<class TT>
@@ -324,7 +331,7 @@ inline VectorND<TT> operator *(const TT& constant, const VectorND<TT>& ipVector)
 {
 	VectorND<TT> returnVT(ipVector.iLength);
 
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i < ipVector.iLength; i++)
 	{
 		returnVT.values[i] = constant * ipVector.values[i];
 	}

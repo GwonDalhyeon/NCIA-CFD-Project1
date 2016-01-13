@@ -3,11 +3,11 @@
 #include <iostream>
 #include <time.h>
 
-#include "CSR1.h"
+#include "CSROld.h"
 #include "GridInfomation.h"
 #include "LevelSet.h"
 
-#include "LinearEquationSolver.h"
+#include "LinearSolver.h"
 
 class LaplaceEquationSolver
 {
