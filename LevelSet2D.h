@@ -53,6 +53,19 @@ public:
 	inline void computeUnitNormal();
 	inline Vector2D<double> computeUnitNormal(const int& i, const int& j);
 	inline Vector2D<double> computeUnitNormal(const Vector2D<int> ipVector);
+
+	// Derivative
+	inline double dxxPhi(const int& i, const int& j);
+	inline double dxPhi(const int& i, const int& j);
+	inline double dxPlusPhi(const int& i, const int& j);
+	inline double dxMinusPhi(const int& i, const int& j);
+
+	inline double dyyPhi(const int& i, const int& j);
+	inline double dyPhi(const int& i, const int& j);
+	inline double dyPlusPhi(const int& i, const int& j);
+	inline double dyMinusPhi(const int& i, const int& j);
+
+	
 private:
 
 };
@@ -275,4 +288,140 @@ inline Vector2D<double> LevelSet2D::computeUnitNormal(const int & i, const int &
 inline Vector2D<double> LevelSet2D::computeUnitNormal(const Vector2D<int> ipVector)
 {
 	return computeUnitNormal(ipVector[0], ipVector[1]);
+}
+
+inline double LevelSet2D::dxxPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i > grid.iStart && i < grid.iEnd)
+	{
+		return (phi(i + 1, j) - 2 * phi(i, j) + phi(i - 1, j))*grid.oneOver2dx;
+	}
+	else if (i == grid.iStart)
+	{
+		return (phi(i, j) - 2 * phi(i + 1, j) + phi(i + 2, j))*grid.oneOver2dx;
+	}
+	else
+	{
+		return (phi(i - 2, j) - 2 * phi(i - 1, j) + phi(i, j))*grid.oneOver2dx;
+	}
+}
+
+inline double LevelSet2D::dxPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i > grid.iStart && i < grid.iEnd)
+	{
+		return (phi(i + 1, j) - phi(i - 1, j))*grid.oneOver2dx;
+	}
+	else if (i == grid.iStart)
+	{
+		return dxPlusPhi(i, j);
+	}
+	else
+	{
+		return dxMinusPhi(i, j);
+	}
+}
+
+inline double LevelSet2D::dxPlusPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i < grid.iEnd)
+	{
+		return (phi(i + 1, j) - phi(i, j))*grid.oneOverdx;
+	}
+	else
+	{
+		return (phi(i, j) - phi(i - 1, j))*grid.oneOverdx;
+	}
+}
+
+inline double LevelSet2D::dxMinusPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i > grid.iStart)
+	{
+		return (phi(i, j) - phi(i - 1, j))*grid.oneOverdx;
+	}
+	else
+	{
+		return (phi(i + 1, j) - phi(i, j))*grid.oneOverdx;
+	}
+}
+
+inline double LevelSet2D::dyyPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart && j < grid.jEnd)
+	{
+		return (phi(i, j + 1) - 2 * phi(i, j) + phi(i, j - 1))*grid.oneOver2dy;
+	}
+	else if (j == grid.jStart)
+	{
+		return (phi(i, j) - 2 * phi(i, j + 1) + phi(i, j + 2))*grid.oneOver2dy;
+	}
+	else
+	{
+		return (phi(i, j - 2) - 2 * phi(i, j - 1) + phi(i, j))*grid.oneOver2dy;
+	}
+}
+
+inline double LevelSet2D::dyPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart && j < grid.jEnd)
+	{
+		return (phi(i, j + 1) - phi(i, j - 1))*grid.oneOver2dy;
+	}
+	else if (j == grid.jStart)
+	{
+		return dyPlusPhi(i, j);
+	}
+	else
+	{
+		return dyMinusPhi(i, j);
+	}
+}
+
+inline double LevelSet2D::dyPlusPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j < grid.jEnd)
+	{
+		return (phi(i, j + 1) - phi(i, j))*grid.oneOverdy;
+	}
+	else
+	{
+		return (phi(i, j) - phi(i, j - 1))*grid.oneOverdy;
+	}
+}
+
+inline double LevelSet2D::dyMinusPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart)
+	{
+		return (phi(i, j) - phi(i, j - 1))*grid.oneOverdy;
+	}
+	else
+	{
+		return (phi(i, j + 1) - phi(i, j))*grid.oneOverdy;
+	}
 }

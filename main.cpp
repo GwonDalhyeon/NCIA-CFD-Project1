@@ -11,7 +11,7 @@ void main()
 	Grid2D testGrid2d(0.0, 1.0, 101, 0.0, 1.0, 101);
 	PoissonSolver testPoisson2d;
 	testPoisson2d.solvePoissonJumpCondi(2, testGrid2d);
-
+	
 
 	//CSR<double> testCSR();
 	//cout << testCSR << endl;
