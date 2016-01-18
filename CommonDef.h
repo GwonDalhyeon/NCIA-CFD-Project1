@@ -21,4 +21,3 @@ typedef double			T;
 //typedef VECTOR_2D<int>	VI;
 typedef complex<T>		Tcomp;
 typedef complex<int>    Icomp;
-
