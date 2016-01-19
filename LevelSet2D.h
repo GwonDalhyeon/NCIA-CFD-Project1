@@ -10,7 +10,7 @@ public:
 	Field2D<Vector2D<double>> normal;
 	Field2D<Vector2D<double>> unitNormal;
 	Field2D<Vector2D<double>> tangential;
-
+	Field2D<double> meanCurvature;
 
 
 	LevelSet2D();
@@ -54,6 +54,12 @@ public:
 	inline Vector2D<double> computeUnitNormal(const int& i, const int& j);
 	inline Vector2D<double> computeUnitNormal(const Vector2D<int> ipVector);
 
+	inline void computeMeanCurvature();
+	inline double computeMeanCurvature(const int& i, const int& j);
+	inline double computeMeanCurvature(const Vector2D<int> ipVector);
+
+	inline Vector2D<double> gradient(const int& i, const int& j);
+
 	// Derivative
 	inline double dxxPhi(const int& i, const int& j);
 	inline double dxPhi(const int& i, const int& j);
@@ -65,6 +71,7 @@ public:
 	inline double dyPlusPhi(const int& i, const int& j);
 	inline double dyMinusPhi(const int& i, const int& j);
 
+	inline double dxyPhi(const int& i, const int& j);
 	
 private:
 
@@ -85,6 +92,7 @@ inline LevelSet2D::LevelSet2D(const Grid2D & ipGrid)
 	normal = Field2D<Vector2D<double>>(ipGrid);
 	unitNormal = Field2D<Vector2D<double>>(ipGrid);
 	tangential = Field2D<Vector2D<double>>(ipGrid);
+	meanCurvature = Field2D<double>(ipGrid);
 }
 
 
@@ -290,6 +298,32 @@ inline Vector2D<double> LevelSet2D::computeUnitNormal(const Vector2D<int> ipVect
 	return computeUnitNormal(ipVector[0], ipVector[1]);
 }
 
+inline void LevelSet2D::computeMeanCurvature()
+{
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.iStart; j <= grid.jEnd; j++)
+		{
+			meanCurvature(i, j) = computeMeanCurvature(i, j);
+		}
+	}
+}
+
+inline double LevelSet2D::computeMeanCurvature(const int & i, const int & j)
+{
+	return -(dxxPhi(i, j)*dyPhi(i, j)*dyPhi(i, j) - 2.0*dxyPhi(i, j)*dxPhi(i, j)*dyPhi(i, j) + dyyPhi(i, j)*dxPhi(i, j)*dxPhi(i, j)) / pow(dxPhi(i, j)*dxPhi(i, j) + dyPhi(i, j)*dyPhi(i, j), 3.0 / 2.0);
+}
+
+inline double LevelSet2D::computeMeanCurvature(const Vector2D<int> ipVector)
+{
+	return computeMeanCurvature(ipVector.i,ipVector.j);
+}
+
+inline Vector2D<double> LevelSet2D::gradient(const int & i, const int & j)
+{
+	return Vector2D<double>(dxPhi(i,j),dyPhi(i,j));
+}
+
 inline double LevelSet2D::dxxPhi(const int & i, const int & j)
 {
 	assert(i >= grid.iStart && i <= grid.iEnd);
@@ -423,5 +457,24 @@ inline double LevelSet2D::dyMinusPhi(const int & i, const int & j)
 	else
 	{
 		return (phi(i, j + 1) - phi(i, j))*grid.oneOverdy;
+	}
+}
+
+inline double LevelSet2D::dxyPhi(const int & i, const int & j)
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart && j < grid.jEnd)
+	{
+		return (dxPhi(i, j + 1) - dxPhi(i, j - 1))*grid.oneOver2dy;
+	}
+	else if (j == grid.iStart)
+	{
+		return (dxPhi(i, j + 1) - dxPhi(i, j))*grid.oneOverdy;
+	}
+	else
+	{
+		return (dxPhi(i, j) - dxPhi(i, j - 1))*grid.oneOverdy;
 	}
 }

@@ -133,8 +133,8 @@ inline void Grid2D::initialize(const double & ipXMin, const double & ipXmax, con
 	yMax = ipYmax;
 	xLength = xMax - xMin;
 	yLength = yMax - yMin;
-	dx = xLength / (double)iRes;
-	dy = yLength / (double)jRes;
+	dx = xLength / (double)(iRes-1);
+	dy = yLength / (double)(jRes-1);
 	twodx = 2.0 * dx;
 	twody = 2.0*dy;
 	dx2 = dx*dx;

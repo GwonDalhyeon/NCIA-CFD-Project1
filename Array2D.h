@@ -129,6 +129,8 @@ public:
 		}
 		initialize(ipArray.iStart, ipArray.iEnd, ipArray.iRes, ipArray.jStart, ipArray.jEnd, ipArray.jRes, ipArray.ijRes);
 
+		assert(ijRes > 0);
+
 		values = new TT[ijRes];
 
 		for (int i = 0; i < ijRes; i++)
@@ -252,7 +254,7 @@ inline Array2D<TT>::Array2D(const int & ipiRes)
 {
 	if (values != nullptr)
 	{
-		delete[] values;
+		values = nullptr;
 	}
 	initialize(0, ipiRes - 1, ipiRes, 0, 0, 0, ipiRes);
 
@@ -268,14 +270,14 @@ inline Array2D<TT>::Array2D(const int & ipiRes, const int& ipjRes)
 {
 	if (values!=nullptr)
 	{
-		delete[] values;
+		values = nullptr;
 	}
 
 	initialize(0, ipiRes - 1, ipiRes, 0, ipjRes - 1, ipjRes, ipiRes*ipjRes);
 
 	assert(iRes > 0 && jRes > 0);
 
-	values		= new TT[ijRes];
+	values = new TT[ijRes];
 
 	initialValues();
 }
@@ -319,7 +321,7 @@ inline Array2D<TT>::Array2D(const Array2D<TT>& ipArray)
 {	
 	if (values != nullptr)
 	{
-		delete[] values;
+		values = nullptr;
 	}
 
 	initialize(ipArray.iStart, ipArray.iEnd, ipArray.iRes, ipArray.jStart, ipArray.jEnd, ipArray.jRes, ipArray.ijRes);

@@ -72,6 +72,20 @@ public:
 		return dataArray(i, j);
 	}
 
+	inline Vector2D<double> gradient(const int& i, const int& j);
+
+	// Derivative
+	inline TT dxxPhi(const int& i, const int& j) const;
+	inline TT dxPhi(const int& i, const int& j) const;
+	inline TT dxPlusPhi(const int& i, const int& j) const;
+	inline TT dxMinusPhi(const int& i, const int& j) const;
+
+	inline TT dyyPhi(const int& i, const int& j) const;
+	inline TT dyPhi(const int& i, const int& j) const;
+	inline TT dyPlusPhi(const int& i, const int& j) const;
+	inline TT dyMinusPhi(const int& i, const int& j) const;
+
+	inline TT dxyPhi(const int& i, const int& j) const;
 
 private:
 
@@ -135,8 +149,8 @@ inline void Field2D<TT>::initialize(const double & ipXMin, const double & ipXmax
 	yMax = ipYmax;
 	xLength = xMax - xMin;
 	yLength = yMax - yMin;
-	dx = xLength / (double)iRes;
-	dy = yLength / (double)jRes;
+	dx = xLength / (double)(iRes - 1);
+	dy = yLength / (double)(jRes - 1);
 	twodx = 2.0 * dx;
 	twody = 2.0*dy;
 	dx2 = dx*dx;
@@ -148,4 +162,175 @@ inline void Field2D<TT>::initialize(const double & ipXMin, const double & ipXmax
 	oneOverdx2 = oneOverdx*oneOverdx;
 	oneOverdy2 = oneOverdy*oneOverdy;
 }
+
+template<class TT>
+inline Vector2D<double> Field2D<TT>::gradient(const int & i, const int & j)
+{
+	return Vector2D<double>(dxPhi(i, j), dyPhi(i, j));
+}
+
+template<class TT>
+inline TT Field2D<TT>::dxxPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i > grid.iStart && i < grid.iEnd)
+	{
+		return (dataArray(i + 1, j) - 2 * dataArray(i, j) + dataArray(i - 1, j))*grid.oneOver2dx;
+	}
+	else if (i == grid.iStart)
+	{
+		return (dataArray(i, j) - 2 * dataArray(i + 1, j) + dataArray(i + 2, j))*grid.oneOver2dx;
+	}
+	else
+	{
+		return (dataArray(i - 2, j) - 2 * dataArray(i - 1, j) + dataArray(i, j))*grid.oneOver2dx;
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dxPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i > grid.iStart && i < grid.iEnd)
+	{
+		return (dataArray(i + 1, j) - dataArray(i - 1, j))*grid.oneOver2dx;
+	}
+	else if (i == grid.iStart)
+	{
+		return dxPlusPhi(i, j);
+	}
+	else
+	{
+		return dxMinusPhi(i, j);
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dxPlusPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i < grid.iEnd)
+	{
+		return (dataArray(i + 1, j) - dataArray(i, j))*grid.oneOverdx;
+	}
+	else
+	{
+		return (dataArray(i, j) - dataArray(i - 1, j))*grid.oneOverdx;
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dxMinusPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (i > grid.iStart)
+	{
+		return (dataArray(i, j) - dataArray(i - 1, j))*grid.oneOverdx;
+	}
+	else
+	{
+		return (dataArray(i + 1, j) - dataArray(i, j))*grid.oneOverdx;
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dyyPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart && j < grid.jEnd)
+	{
+		return (dataArray(i, j + 1) - 2 * dataArray(i, j) + dataArray(i, j - 1))*grid.oneOver2dy;
+	}
+	else if (j == grid.jStart)
+	{
+		return (dataArray(i, j) - 2 * dataArray(i, j + 1) + dataArray(i, j + 2))*grid.oneOver2dy;
+	}
+	else
+	{
+		return (dataArray(i, j - 2) - 2 * dataArray(i, j - 1) + dataArray(i, j))*grid.oneOver2dy;
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dyPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart && j < grid.jEnd)
+	{
+		return (dataArray(i, j + 1) - dataArray(i, j - 1))*grid.oneOver2dy;
+	}
+	else if (j == grid.jStart)
+	{
+		return dyPlusPhi(i, j);
+	}
+	else
+	{
+		return dyMinusPhi(i, j);
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dyPlusPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j < grid.jEnd)
+	{
+		return (dataArray(i, j + 1) - dataArray(i, j))*grid.oneOverdy;
+	}
+	else
+	{
+		return (dataArray(i, j) - dataArray(i, j - 1))*grid.oneOverdy;
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dyMinusPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart)
+	{
+		return (dataArray(i, j) - dataArray(i, j - 1))*grid.oneOverdy;
+	}
+	else
+	{
+		return (dataArray(i, j + 1) - dataArray(i, j))*grid.oneOverdy;
+	}
+}
+
+template<class TT>
+inline TT Field2D<TT>::dxyPhi(const int & i, const int & j) const
+{
+	assert(i >= grid.iStart && i <= grid.iEnd);
+	assert(j >= grid.jStart && j <= grid.jEnd);
+
+	if (j > grid.jStart && j < grid.jEnd)
+	{
+		return (dxPhi(i, j + 1) - dxPhi(i, j - 1))*grid.oneOver2dy;
+	}
+	else if (j == grid.iStart)
+	{
+		return (dxPhi(i, j + 1) - dxPhi(i, j))*grid.oneOverdy;
+	}
+	else
+	{
+		return (dxPhi(i, j) - dxPhi(i, j - 1))*grid.oneOverdy;
+	}
+}
+
 

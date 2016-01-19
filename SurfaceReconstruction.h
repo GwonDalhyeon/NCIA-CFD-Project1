@@ -4,22 +4,43 @@
 #include "AdvectionMethod2D.h"
 #include "PoissonSolver.h"
 
+
+double AdvectionMethod2D<double>::alpha;
+
 template <class TT>
 class SurfaceReconst
 {
 public:
-	static double alpha; // = min(delta x, delta y) // This is a parameter for heaviside function and delta function.
-	
-	//SurfaceReconst() { cout << alpha << endl };
+	Grid2D grid;
+	LevelSet2D levelSet;
+	Field2D<double> distance;
+	Field2D<double> velocity;
+
+	Array2D<Vector2D<double>> givenPoint;
+	int givenPointNum;
+	double dt;
+
+	double LpNorm;
+
 	SurfaceReconst();
 	~SurfaceReconst();
 
-	void distance2Data(const Field2D<TT>& ipData, Field2D<TT>& distance);
-	static double heaviside(const double& ip);
-	static double deltaFt(const double& ip);
+	SurfaceReconst(const Grid2D& ipGrid);
+	SurfaceReconst(const Grid2D& ipGrid, const Array2D<Vector2D<double>>& ipData);
 
+	void distance2Data();
+	void distance2Data(const int& i, const int& j);
+	void exactDistance();
 
+	void initialCondition(int example);
 
+	void computeVelocity();
+	double computeIntegralTerm();
+
+	void surfaceReconstructionSolver(int example);
+
+	void outputResult();
+	void outputResult(const int& iter);
 private:
 
 };
@@ -35,81 +56,41 @@ SurfaceReconst<TT>::~SurfaceReconst()
 }
 
 template<class TT>
-inline void SurfaceReconst<TT>::distance2Data(const Field2D<TT>& ipData, Field2D<TT>& distance)
+inline SurfaceReconst<TT>::SurfaceReconst(const Grid2D & ipGrid)
+{
+	grid = Grid2D(ipGrid);
+	levelSet = LevelSet2D(ipGrid);
+	distance = Field2D<double>(ipGrid);
+	velocity = Field2D<double>(ipGrid);
+	dt = grid.dx*grid.dx / 2.0;
+	LpNorm = 2;
+}
+
+template<class TT>
+inline SurfaceReconst<TT>::SurfaceReconst(const Grid2D & ipGrid, const Array2D<Vector2D<double>>& ipData)
+{
+	grid = Grid2D(ipGrid);
+	levelSet = LevelSet2D(ipGrid);
+	distance = Field2D<double>(ipGrid);
+	velocity = Field2D<double>(ipGrid);
+	givenPoint = ipData;
+	givenPointNum = ipData.jEnd;
+	dt = grid.dx*grid.dx / 2.0;
+	LpNorm = 2;
+}
+
+template<class TT>
+inline void SurfaceReconst<TT>::distance2Data()
 {
 	TT xMin, yMin;
-	double h = min(distance.dx, distance.dy);
+	double h = min(grid.dx, grid.dy);
 
-	for (int i = distance.iStart; i < distance.iEnd; i++)
+	for (int i = distance.iStart; i <= distance.iEnd; i++)
 	{
-		for (int j = distance.jStart; j < distance.jEnd; j++)
+		for (int j = distance.jStart; j <= distance.jEnd; j++)
 		{
-			if (i==distance.iStart)
-			{
-				xMin = min(distance(i, j), distance(i + 1, j));
-			}
-			else if (i==distance.iEnd)
-			{
-				xMin = min(distance(i-1, j), distance(i, j));
-			}
-			else
-			{
-				xMin = min(distance(i - 1, j), distance(i + 1, j));
-			}
-
-			if (j == distance.jStart)
-			{
-				yMin = min(distance(i, j), distance(i, j + 1));
-			}
-			else if (i == distance.iEnd)
-			{
-				yMin = min(distance(i, j - 1), distance(i, j));
-			}
-			else
-			{
-				yMin = min(distance(i, j - 1), distance(i, j + 1));
-			}
-
-			if (abs(xMin-yMin) >= h)
-			{
-				distance(i, j) = min(xMin, yMin) + h;
-			}
-			else
-			{
-				u(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
-			}
-		}
-	}
-
-	for (int i = distance.iStart; i < distance.iEnd; i++)
-	{
-		for (int j = distance.jEnd; j < distance.jStart; j++)
-		{
-			if (i == distance.iStart)
-			{
-				xMin = min(distance(i, j), distance(i + 1, j));
-			}
-			else if (i == distance.iEnd)
-			{
-				xMin = min(distance(i - 1, j), distance(i, j));
-			}
-			else
-			{
-				xMin = min(distance(i - 1, j), distance(i + 1, j));
-			}
-
-			if (j == distance.jStart)
-			{
-				yMin = min(distance(i, j), distance(i, j + 1));
-			}
-			else if (i == distance.iEnd)
-			{
-				yMin = min(distance(i, j - 1), distance(i, j));
-			}
-			else
-			{
-				yMin = min(distance(i, j - 1), distance(i, j + 1));
-			}
+			xMin = min(distance(max(i - 1, distance.iStart), j), distance(min(i + 1, distance.iEnd), j));
+			yMin = min(distance(i, max(j - 1, distance.jStart)), distance(i, min(j + 1, distance.jEnd)));
 
 			if (abs(xMin - yMin) >= h)
 			{
@@ -117,40 +98,18 @@ inline void SurfaceReconst<TT>::distance2Data(const Field2D<TT>& ipData, Field2D
 			}
 			else
 			{
-				u(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
+				distance(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
 			}
 		}
 	}
 
-	for (int i = distance.iEnd; i < distance.iStart; i++)
-	{
-		for (int j = distance.jStart; j < distance.jEnd; j++)
-		{
-			if (i == distance.iStart)
-			{
-				xMin = min(distance(i, j), distance(i + 1, j));
-			}
-			else if (i == distance.iEnd)
-			{
-				xMin = min(distance(i - 1, j), distance(i, j));
-			}
-			else
-			{
-				xMin = min(distance(i - 1, j), distance(i + 1, j));
-			}
 
-			if (j == distance.jStart)
-			{
-				yMin = min(distance(i, j), distance(i, j + 1));
-			}
-			else if (i == distance.iEnd)
-			{
-				yMin = min(distance(i, j - 1), distance(i, j));
-			}
-			else
-			{
-				yMin = min(distance(i, j - 1), distance(i, j + 1));
-			}
+	for (int i = distance.iStart; i <= distance.iEnd; i++)
+	{
+		for (int j = distance.jEnd; j >= distance.jStart; j--)
+		{
+			xMin = min(distance(max(i - 1, distance.iStart), j), distance(min(i + 1, distance.iEnd), j));
+			yMin = min(distance(i, max(j - 1, distance.jStart)), distance(i, min(j + 1, distance.jEnd)));
 
 			if (abs(xMin - yMin) >= h)
 			{
@@ -158,40 +117,19 @@ inline void SurfaceReconst<TT>::distance2Data(const Field2D<TT>& ipData, Field2D
 			}
 			else
 			{
-				u(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
+				distance(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
 			}
 		}
 	}
 
-	for (int i = distance.iEnd; i < distance.iStart; i++)
-	{
-		for (int j = distance.jEnd; j < distance.jStart; j++)
-		{
-			if (i == distance.iStart)
-			{
-				xMin = min(distance(i, j), distance(i + 1, j));
-			}
-			else if (i == distance.iEnd)
-			{
-				xMin = min(distance(i - 1, j), distance(i, j));
-			}
-			else
-			{
-				xMin = min(distance(i - 1, j), distance(i + 1, j));
-			}
 
-			if (j == distance.jStart)
-			{
-				yMin = min(distance(i, j), distance(i, j + 1));
-			}
-			else if (i == distance.iEnd)
-			{
-				yMin = min(distance(i, j - 1), distance(i, j));
-			}
-			else
-			{
-				yMin = min(distance(i, j - 1), distance(i, j + 1));
-			}
+
+	for (int i = distance.iEnd; i >= distance.iStart; i--)
+	{
+		for (int j = distance.jStart; j <= distance.jEnd; j++)
+		{
+			xMin = min(distance(max(i - 1, distance.iStart), j), distance(min(i + 1, distance.iEnd), j));
+			yMin = min(distance(i, max(j - 1, distance.jStart)), distance(i, min(j + 1, distance.jEnd)));
 
 			if (abs(xMin - yMin) >= h)
 			{
@@ -199,40 +137,18 @@ inline void SurfaceReconst<TT>::distance2Data(const Field2D<TT>& ipData, Field2D
 			}
 			else
 			{
-				u(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
+				distance(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
 			}
 		}
 	}
 
-	for (int i = distance.iStart; i < distance.iEnd; i++)
-	{
-		for (int j = distance.jStart; j < distance.jEnd; j++)
-		{
-			if (i == distance.iStart)
-			{
-				xMin = min(distance(i, j), distance(i + 1, j));
-			}
-			else if (i == distance.iEnd)
-			{
-				xMin = min(distance(i - 1, j), distance(i, j));
-			}
-			else
-			{
-				xMin = min(distance(i - 1, j), distance(i + 1, j));
-			}
 
-			if (j == distance.jStart)
-			{
-				yMin = min(distance(i, j), distance(i, j + 1));
-			}
-			else if (i == distance.iEnd)
-			{
-				yMin = min(distance(i, j - 1), distance(i, j));
-			}
-			else
-			{
-				yMin = min(distance(i, j - 1), distance(i, j + 1));
-			}
+	for (int i = distance.iEnd; i >= distance.iStart; i--)
+	{
+		for (int j = distance.jEnd; j >= distance.jStart; j--)
+		{
+			xMin = min(distance(max(i - 1, distance.iStart), j), distance(min(i + 1, distance.iEnd), j));
+			yMin = min(distance(i, max(j - 1, distance.jStart)), distance(i, min(j + 1, distance.jEnd)));
 
 			if (abs(xMin - yMin) >= h)
 			{
@@ -240,38 +156,293 @@ inline void SurfaceReconst<TT>::distance2Data(const Field2D<TT>& ipData, Field2D
 			}
 			else
 			{
-				u(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
+				distance(i, j) = (xMin + yMin + sqrt(2 * h*h - (xMin - yMin)*(xMin - yMin))) / 2.0;
 			}
+		}
+	}
+
+
+}
+
+template<class TT>
+inline void SurfaceReconst<TT>::distance2Data(const int & i, const int & j)
+{
+	double tempDist;
+	distance(i, j) = 100;
+	for (int k = 0; k < givenPointNum; k++)
+	{
+		tempDist = (grid(i, j) - givenPoint(k)).magnitude();
+		if (distance(i, j) > tempDist)
+		{
+			distance(i, j) = tempDist;
 		}
 	}
 }
 
 template<class TT>
-inline double SurfaceReconst<TT>::heaviside(const double & ip)
+inline void SurfaceReconst<TT>::exactDistance()
 {
-	if (ip > alpha)
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
-		return 1.0;
-	}
-	else if (ip < -alpha)
-	{
-		return 0.0;
-	}
-	else
-	{
-		return (1 + ip / alpha + sin(PI*ip / alpha) / PI) / 2.0;
+		for (int j = grid.jStart; j <= grid.jEnd; j++)
+		{
+			distance2Data(i, j);
+		}
 	}
 }
 
 template<class TT>
-inline double SurfaceReconst<TT>::deltaFt(const double & ip)
+inline void SurfaceReconst<TT>::initialCondition(int example)
 {
-	if (abs(ip)>alpha)
+	if (example == 1)
 	{
-		return 0.0;
+		grid = Grid2D(0, 1, 101, 0, 1, 101);
+		levelSet = LevelSet2D(grid);
+		distance = Field2D<double>(grid);
+		distance.dataArray = 100;
+		velocity = Field2D<double>(grid);
+		givenPoint = Array2D<Vector2D<double>>(1, 18);
+		dt = grid.dx*grid.dy / 2.0;
+		LpNorm = 2;
+
+		for (int i = 0; i < 5; i++)
+		{
+			givenPoint(i) = Vector2D<double>(0.3 + 0.1*double(i), 0.3) + grid.dx / 2;
+			givenPoint(13 + i) = Vector2D<double>(0.3 + 0.1*double(i), 0.7) + grid.dx / 2;
+		}
+		for (int i = 0; i < 4; i++)
+		{
+			givenPoint(5 + i) = Vector2D<double>(0.3, 0.3 + 0.1*double(i)) + grid.dx / 2;
+			givenPoint(9 + i) = Vector2D<double>(0.7, 0.3 + 0.1*double(i)) + grid.dx / 2;
+		}
+		distance2Data();
+
+		// level set initialzation
+		for (int i = grid.iStart; i <= grid.iEnd; i++)
+		{
+			for (int j = grid.jStart; j <= grid.jEnd; j++)
+			{
+				if (abs(grid(i, j)(0) - 0.5)>abs(grid(i, j)(1) - 0.5))
+				{
+					levelSet(i, j) = abs(grid(i, j)(0) - 0.5) - 0.25;
+				}
+				else
+				{
+					levelSet(i, j) = abs(grid(i, j)(1) - 0.5) - 0.25;
+				}
+			}
+		}
+
+
+
+
 	}
-	else
+	else if (example == 2)
 	{
-		return (1 + cos(PI*ip / alpha)) / (2 * alpha);
+
+		grid = Grid2D(0, 1, 101, 0, 1, 101);
+		levelSet = LevelSet2D(grid);
+		distance = Field2D<double>(grid);
+		distance.dataArray = 100;
+		velocity = Field2D<double>(grid);
+		givenPointNum = 36;
+		givenPoint = Array2D<Vector2D<double>>(1, givenPointNum);
+		dt = grid.dx*grid.dy / 2.0;
+		LpNorm = 2;
+
+		for (int i = 0; i < givenPointNum; i++)
+		{
+			givenPoint(i) = 0.25*Vector2D<double>(cos(2 * PI*i / givenPointNum), sin(2 * PI*i / givenPointNum)) + 0.5 + grid.dx / 2;
+		}
+
+		int i0, i1, j0, j1;
+		for (int k = 0; k < givenPointNum; k++)
+		{
+			i0 = floor((givenPoint(k)(0) - grid.xMin)*grid.oneOverdx);
+			j0 = floor((givenPoint(k)(1) - grid.yMin)*grid.oneOverdy);
+			i1 = ceil((givenPoint(k)(0) - grid.xMin)*grid.oneOverdx);
+			j1 = ceil((givenPoint(k)(1) - grid.yMin)*grid.oneOverdy);
+
+			distance2Data(i0, j0);
+			distance2Data(i0, j1);
+			distance2Data(i1, j0);
+			distance2Data(i1, j1);
+		}
+
+		//distance2Data(); // distance initialization
+		exactDistance();
+
+		// level set initialization
+		//for (int i = grid.iStart; i <= grid.iEnd; i++)
+		//{
+		//	for (int j = grid.jStart; j <= grid.jEnd; j++)
+		//	{
+		//		if ((grid(i, j) - 0.5 - grid.dx / 2).magnitude() < 0.25)
+		//		{
+		//			levelSet.phi(i, j) = -distance(i, j) - grid.dx * 3;
+		//		}
+		//		else
+		//		{
+		//			levelSet.phi(i, j) = distance(i, j) - grid.dx * 3;
+		//		}
+
+		//	}
+		//}
+		for (int i = grid.iStart; i <= grid.iEnd; i++)
+		{
+			for (int j = grid.jStart; j <= grid.jEnd; j++)
+			{
+				levelSet.phi(i, j) = (grid(i, j) - 0.5).magnitude() - 0.4;
+			}
+		}
+
 	}
+
+
+}
+
+template<class TT>
+inline void SurfaceReconst<TT>::computeVelocity()
+{
+	double integralTerm = computeIntegralTerm();
+	double lastTerm;
+	Vector2D <double> gradPhi;
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.jStart; j <= grid.jEnd; j++)
+		{
+			gradPhi = levelSet.gradient(i, j);
+			if (gradPhi.magnitude()<3*DBL_EPSILON)
+			{
+				lastTerm = 0;
+			}
+			else
+			{
+				lastTerm = dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) + 1.0 / LpNorm*distance(i, j)*levelSet.meanCurvature(i, j);
+			}
+			velocity(i, j) = gradPhi.magnitude()*integralTerm*pow(distance(i, j), LpNorm - 1)*lastTerm;
+
+			//cout << i << " " << j << endl;
+			//cout << "grad : "<<gradPhi << endl;
+			//cout << "last : " << lastTerm << endl;
+			//cout << "velo : " << velocity(i, j) << endl;
+			//cout << endl;
+		}
+	}
+}
+
+template<class TT>
+inline double SurfaceReconst<TT>::computeIntegralTerm()
+{
+	double sum = 0.0;
+	levelSet.computeMeanCurvature();
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.jStart; j <= grid.jEnd; j++)
+		{
+			sum += pow(distance(i, j),LpNorm)*AdvectionMethod2D<double>::deltaFt(levelSet(i, j))*levelSet.gradient(i, j).magnitude()*grid.dx*grid.dy;
+			//cout << "distance : " << pow(distance(i, j), LpNorm) << endl;
+			//cout << "deltaft  : " << AdvectionMethod2D<double>::deltaFt(levelSet(i, j)) << endl;
+			//cout << "gradient : " << levelSet.gradient(i, j) << endl;
+			//cout << "magnitude: " << levelSet.gradient(i, j).magnitude() << endl;
+			//cout << sum << endl;
+			//cout << endl;
+		}
+	}
+	return pow(sum,1/LpNorm-1);
+}
+
+
+
+template<class TT>
+inline void SurfaceReconst<TT>::surfaceReconstructionSolver(int example)
+{
+	initialCondition(example);
+	
+	AdvectionMethod2D<double>::alpha = min(grid.dx, grid.dy); // delta function parameter.
+
+	outputResult(0);
+	outputResult();
+
+	for (int i = 1; i <= 100; i++)
+	{
+		cout << "iteration : " << i << endl;
+		computeVelocity();
+		//AdvectionMethod2D<double>::levelSetPropagatingTVDRK3(levelSet, velocity, dt);
+		AdvectionMethod2D<double> ::levelSetPropagatingTVDRK3(levelSet, dt);
+		if (i%10==0)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				cout << "Reinitialization : " << i + 1 << endl;
+				AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, 10*dt);
+			}
+		}
+		outputResult(i);
+	}
+	
+
+}
+
+template<class TT>
+inline void SurfaceReconst<TT>::outputResult()
+{
+	//clock_t before;
+	//double  result;
+	//before = clock();
+
+	ofstream solutionFile1;
+	solutionFile1.open("D:\\Data/phi.txt", ios::binary);
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.jStart; j < grid.jEnd; j++)
+		{
+			solutionFile1 << i << " " << j << " " << grid(i, j) << " " << levelSet(i, j) << endl;
+		}
+	}
+	solutionFile1.close();
+
+
+	ofstream solutionFile2;
+	solutionFile2.open("D:\\Data/pointData.txt", ios::binary);
+	for (int i = givenPoint.iStart; i <= givenPoint.iEnd; i++)
+	{
+		for (int j = givenPoint.jStart; j <= givenPoint.jEnd; j++)
+		{
+			solutionFile2 << givenPoint(i, j) << endl;
+		}
+	}
+	solutionFile2.close();
+
+
+	ofstream solutionFile3;
+	solutionFile3.open("D:\\Data/distance.txt", ios::binary);
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.jStart; j < grid.jEnd; j++)
+		{
+			solutionFile3 << i << " " << j << " " << grid(i, j) << " " << distance(i, j) << endl;
+		}
+	}
+	solutionFile3.close();
+
+
+	//result = (double)(clock() - before) / CLOCKS_PER_SEC;
+	//cout << "binary : " << result << "\n";
+	////printf("걸린시간은 %5.2f 입니다.\n", result);
+}
+
+template<class TT>
+inline void SurfaceReconst<TT>::outputResult(const int & iter)
+{
+	ofstream solutionFile1;
+	solutionFile1.open("D:\\Data/phi"+ to_string(iter) +".txt", ios::binary);
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.jStart; j < grid.jEnd; j++)
+		{
+			solutionFile1 << i << " " << j << " " << grid(i, j) << " " << levelSet(i, j) << endl;
+		}
+	}
+	solutionFile1.close();
 }

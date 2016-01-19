@@ -120,7 +120,7 @@ public:
 	
 	Vector2D operator - (const TT& value)
 	{
-		return Vector2D(x  value, y - value);
+		return Vector2D(x - value, y - value);
 	}
 	
 	Vector2D operator * (const TT& value)
@@ -145,6 +145,8 @@ private:
 template <class TT>
 Vector2D<TT>::Vector2D()
 {
+	x = 0;
+	y = 0;
 }
 
 template <class TT>
