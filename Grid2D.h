@@ -90,6 +90,15 @@ public:
 
 		return Vector2D<double>(xMin + double(i - iStart)*dx, yMin + double(j - jStart)*dy);
 	}
+
+	inline Vector2D<double> operator ()(const Vector2D<int> ipVector)const
+	{
+		assert(ipVector.i >= iStart && ipVector.i <= iEnd);
+		assert(ipVector.j >= jStart && ipVector.j <= jEnd);
+
+		return Vector2D<double>(xMin + double(ipVector.i - iStart)*dx, yMin + double(ipVector.j - jStart)*dy);
+	}
+
 	Vector2D<double> point(const int& i, const int& j);
 	Vector2D<double> cellCenter(const int& i, const int& j);
 private:

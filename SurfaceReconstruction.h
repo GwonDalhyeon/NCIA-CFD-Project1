@@ -36,8 +36,11 @@ public:
 
 	void computeVelocity();
 	double computeIntegralTerm();
+	void levelSetPropagatingTVDRK3();
 
 	void surfaceReconstructionSolver(int example);
+
+	bool stoppingCriterion();
 
 	void outputResult();
 	void outputResult(const int& iter);
@@ -245,7 +248,7 @@ inline void SurfaceReconst<TT>::initialCondition(int example)
 		distance = Field2D<double>(grid);
 		distance.dataArray = 100;
 		velocity = Field2D<double>(grid);
-		givenPointNum = 36;
+		givenPointNum = 50;
 		givenPoint = Array2D<Vector2D<double>>(1, givenPointNum);
 		dt = grid.dx*grid.dy / 2.0;
 		LpNorm = 2;
@@ -288,11 +291,20 @@ inline void SurfaceReconst<TT>::initialCondition(int example)
 
 		//	}
 		//}
+
+		//for (int i = grid.iStart; i <= grid.iEnd; i++)
+		//{
+		//	for (int j = grid.jStart; j <= grid.jEnd; j++)
+		//	{
+		//		levelSet.phi(i, j) = -(grid(i, j) - 0.5).magnitude() + 0.4;
+		//	}
+		//}
+
 		for (int i = grid.iStart; i <= grid.iEnd; i++)
 		{
 			for (int j = grid.jStart; j <= grid.jEnd; j++)
 			{
-				levelSet.phi(i, j) = (grid(i, j) - 0.5).magnitude() - 0.4;
+				levelSet.phi(i, j) = -(abs((grid(i, j) - 0.5).x) + abs((grid(i, j) - 0.5).y) - 0.28*sqrt(2));
 			}
 		}
 
@@ -312,7 +324,7 @@ inline void SurfaceReconst<TT>::computeVelocity()
 		for (int j = grid.jStart; j <= grid.jEnd; j++)
 		{
 			gradPhi = levelSet.gradient(i, j);
-			if (gradPhi.magnitude()<3*DBL_EPSILON)
+			if (gradPhi.magnitude() < 3 * DBL_EPSILON)
 			{
 				lastTerm = 0;
 			}
@@ -340,7 +352,7 @@ inline double SurfaceReconst<TT>::computeIntegralTerm()
 	{
 		for (int j = grid.jStart; j <= grid.jEnd; j++)
 		{
-			sum += pow(distance(i, j),LpNorm)*AdvectionMethod2D<double>::deltaFt(levelSet(i, j))*levelSet.gradient(i, j).magnitude()*grid.dx*grid.dy;
+			sum += pow(distance(i, j), LpNorm)*AdvectionMethod2D<double>::deltaFt(levelSet(i, j))*levelSet.gradient(i, j).magnitude()*grid.dx*grid.dy;
 			//cout << "distance : " << pow(distance(i, j), LpNorm) << endl;
 			//cout << "deltaft  : " << AdvectionMethod2D<double>::deltaFt(levelSet(i, j)) << endl;
 			//cout << "gradient : " << levelSet.gradient(i, j) << endl;
@@ -349,7 +361,53 @@ inline double SurfaceReconst<TT>::computeIntegralTerm()
 			//cout << endl;
 		}
 	}
-	return pow(sum,1/LpNorm-1);
+	return pow(sum, 1.0 / LpNorm - 1.0);
+}
+
+template<class TT>
+inline void SurfaceReconst<TT>::levelSetPropagatingTVDRK3()
+{
+	LevelSet2D originLevelSet = levelSet;
+	LevelSet2D tempLevelSet(originLevelSet.grid);
+
+	Field2D<TT> k1(levelSet.grid);
+	Field2D<TT> k2(levelSet.grid);
+	Field2D<TT> k3(levelSet.grid);
+
+	Field2D<TT> wenoXMinus(levelSet.grid);
+	Field2D<TT> wenoXPlus(levelSet.grid);
+	Field2D<TT> wenoYMinus(levelSet.grid);
+	Field2D<TT> wenoYPlus(levelSet.grid);
+
+	AdvectionMethod2D<double>::WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
+	{
+		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
+		{
+			k1(i, j) = dt*velocity(i, j);
+			levelSet(i, j) = originLevelSet(i, j) + k1(i, j);
+		}
+	}
+
+	AdvectionMethod2D<double>::WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
+	{
+		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
+		{
+			k2(i, j) = dt*velocity(i, j);
+			levelSet(i, j) = 3.0 / 4.0*originLevelSet(i, j) + 1.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*k2(i, j);
+		}
+	}
+
+	AdvectionMethod2D<double>::WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
+	{
+		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
+		{
+			k3(i, j) = dt*velocity(i, j);
+			levelSet(i, j) = 1.0 / 3.0*originLevelSet(i, j) + 2.0 / 3.0*levelSet(i, j) + 2.0 / 3.0*k3(i, j);
+		}
+	}
 }
 
 
@@ -358,30 +416,61 @@ template<class TT>
 inline void SurfaceReconst<TT>::surfaceReconstructionSolver(int example)
 {
 	initialCondition(example);
-	
+
 	AdvectionMethod2D<double>::alpha = min(grid.dx, grid.dy); // delta function parameter.
+
+	for (int j = 0; j < 100; j++)
+	{
+		cout << "Reinitialization : " << j+1 << endl;
+		AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, dt);
+	}
 
 	outputResult(0);
 	outputResult();
 
-	for (int i = 1; i <= 100; i++)
+	int i = 0;
+	while (!stoppingCriterion())
 	{
-		cout << "iteration : " << i << endl;
+		i++;
+		cout << "Iteration : " << i << endl;
 		computeVelocity();
-		//AdvectionMethod2D<double>::levelSetPropagatingTVDRK3(levelSet, velocity, dt);
-		AdvectionMethod2D<double> ::levelSetPropagatingTVDRK3(levelSet, dt);
-		if (i%10==0)
-		{
-			for (int j = 0; j < 10; j++)
-			{
-				cout << "Reinitialization : " << i + 1 << endl;
-				AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, 10*dt);
-			}
-		}
-		outputResult(i);
-	}
-	
+		levelSetPropagatingTVDRK3();
+		//AdvectionMethod2D<double> ::levelSetPropagatingTVDRK3(levelSet, dt);
+		//AdvectionMethod2D<double>::levelSetPropagatingEuler(levelSet, velocity, dt);
 
+		for (int j = 0; j < 10; j++)
+		{
+			cout << "Reinitialization : " << i << "-" << j + 1 << endl;
+			AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, dt);
+		}
+
+		if (i % 10 == 0)
+		{
+			outputResult(i);
+		}
+	}
+
+
+}
+
+template<class TT>
+inline bool SurfaceReconst<TT>::stoppingCriterion()
+{
+	bool criterion = true;
+
+	Vector2D<int> test(1, 1);
+	levelSet(test);
+
+	for (int i = 0; i < givenPointNum; i++)
+	{
+		if (abs(levelSet.interpolation(givenPoint(i)))>grid.dx + grid.dy)
+		{
+			criterion = false;
+			exit;
+		}
+	}
+
+	return criterion;
 }
 
 template<class TT>
@@ -436,7 +525,7 @@ template<class TT>
 inline void SurfaceReconst<TT>::outputResult(const int & iter)
 {
 	ofstream solutionFile1;
-	solutionFile1.open("D:\\Data/phi"+ to_string(iter) +".txt", ios::binary);
+	solutionFile1.open("D:\\Data/phi" + to_string(iter) + ".txt", ios::binary);
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
 		for (int j = grid.jStart; j < grid.jEnd; j++)

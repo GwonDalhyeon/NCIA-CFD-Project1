@@ -46,6 +46,21 @@ public:
 		return phi(ipVector);
 	}
 
+	inline double& operator ()(const double& x, const double& y) const
+	{
+		assert(x >= grid.xMin && x <= grid.xMax);
+		assert(y >= grid.yMin && y <= grid.yMax);
+
+		return phi(x, y);
+	}
+
+	inline double& operator ()(const Vector2D<double>& ipVector) const
+	{
+		assert(ipVector[0] >= grid.xMin && ipVector[0] <= grid.xMax);
+		assert(ipVector[1] >= grid.yMin && ipVector[1] <= grid.yMax);
+		return phi(ipVector.x, ipVector.y);
+	}
+
 	inline void computeNormal();
 	inline Vector2D<double> computeNormal(const int& i, const int& j);
 	inline Vector2D<double> computeNormal(const Vector2D<int> ipVector);
@@ -59,6 +74,9 @@ public:
 	inline double computeMeanCurvature(const Vector2D<int> ipVector);
 
 	inline Vector2D<double> gradient(const int& i, const int& j);
+
+	inline double interpolation(const double& x, const double& y);
+	inline double interpolation(const Vector2D<double>& ipVector) ;
 
 	// Derivative
 	inline double dxxPhi(const int& i, const int& j);
@@ -322,6 +340,25 @@ inline double LevelSet2D::computeMeanCurvature(const Vector2D<int> ipVector)
 inline Vector2D<double> LevelSet2D::gradient(const int & i, const int & j)
 {
 	return Vector2D<double>(dxPhi(i,j),dyPhi(i,j));
+}
+
+inline double LevelSet2D::interpolation(const double & x, const double & y)
+{
+	Vector2D<double> xy(x, y);
+	Vector2D<int> cell = phi.containedCell(x, y);
+
+	double distance00, distance10, distance01, distance11;
+	distance00 = (grid(cell) - xy).magnitude();
+	distance10 = (grid(cell.i + 1, cell.j) - xy).magnitude();
+	distance01 = (grid(cell.i, cell.j + 1) - xy).magnitude();
+	distance11 = (grid(cell.i + 1, cell.j + 1) - xy).magnitude();
+
+	return ((phi(cell)*distance00 + phi(cell.i + 1, cell.j)*distance10 + phi(cell.i, cell.j + 1)*distance01 + phi(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
+}
+
+inline double LevelSet2D::interpolation(const Vector2D<double>& ipVector)
+{
+	return interpolation(ipVector.x, ipVector.y);
 }
 
 inline double LevelSet2D::dxxPhi(const int & i, const int & j)

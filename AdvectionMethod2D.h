@@ -16,11 +16,14 @@ public:
 	static TT deltaFt(const double& constant);
 
 	static TT sign(const TT& constant);
-	static void WENO5th(Field2D<TT>& wenoField, const Field2D<TT>& ipField, const double& dt);
+
+	static void WENO5th(const Field2D<TT>& ipField, Field2D<TT>& wenoXMinus, Field2D<TT>& wenoXPlus, Field2D<TT>& wenoYMinus, Field2D<TT>& wenoYPlus);
+	static void WENO5th(const TT& v1, const TT& v2, const TT& v3, const TT& v4, const TT& v5, TT& constant);
 	static void WENO5thApproxXMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoXMinus);
 	static void WENO5thApproxXPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoXPlus);
 	static void WENO5thApproxYMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoYMinus);
 	static void WENO5thApproxYPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoYPlus);
+
 
 	static void levelSetReinitializationTVDRK3(LevelSet2D& levelSet, const double& dt);
 	static TT reinitialGodunov(const TT& dxPlus, const TT& dxMinus, const TT& dyPlus, const TT& dyMinus, const TT& phi);
@@ -28,6 +31,8 @@ public:
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const double& dt);
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const Field2D<double>& velocity, const double& dt);
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const Field2D<double>& velocityX, const Field2D<double>& velocityY, const double& dt);
+
+	static void levelSetPropagatingEuler(LevelSet2D& levelSet, const Field2D<double>& velocity, const double& dt);
 
 	static TT propagatingGodunov(const TT& dxPlus, const TT& dxMinus, const TT& dyPlus, const TT& dyMinus, const TT& sign);
 
@@ -83,18 +88,34 @@ inline TT AdvectionMethod2D<TT>::sign(const TT & constant)
 }
 
 template<class TT>
-inline void AdvectionMethod2D<TT>::WENO5th(Field2D<TT>& wenoField, const Field2D<TT>& ipField, const double & dt)
+inline void AdvectionMethod2D<TT>::WENO5th(const Field2D<TT>& ipField, Field2D<TT>& wenoXMinus, Field2D<TT>& wenoXPlus, Field2D<TT>& wenoYMinus, Field2D<TT>& wenoYPlus)
 {
-	Field2D<TT> wenoXMinus(wenoField.grid);
-	Field2D<TT> wenoXPlus(wenoField.grid);
-	Field2D<TT> wenoYMinus(wenoField.grid);
-	Field2D<TT> wenoYPlus(wenoField.grid);
+	WENO5thApproxXMinus(ipField, wenoXMinus);
+	WENO5thApproxXPlus(ipField, wenoXPlus);
+	WENO5thApproxYMinus(ipField, wenoYMinus);
+	WENO5thApproxYPlus(ipField, wenoYPlus);
+}
 
-	WENO5thApproxXMinus(wenoField, wenoXMinus);
-	WENO5thApproxXPlus(wenoField, wenoXPlus);
-	WENO5thApproxYMinus(wenoField, wenoYMinus);
-	WENO5thApproxYPlus(wenoField, wenoYPlus);
+template<class TT>
+inline void AdvectionMethod2D<TT>::WENO5th(const TT & v1, const TT & v2, const TT & v3, const TT & v4, const TT & v5, TT & constant)
+{
+	TT s1, s2, s3;
+	TT a1, a2, a3;
+	TT w1, w2, w3;
 
+	s1 = 13.0 / 12.0*(v1 - 2.0*v2 + v3)*(v1 - 2.0*v2 + v3) + 1.0 / 4.0*(v1 - 4.0*v2 + 3.0*v3)*(v1 - 4.0*v2 + 3.0*v3);
+	s2 = 13.0 / 12.0*(v2 - 2.0*v3 + v4)*(v2 - 2.0*v3 + v4) + 1.0 / 4.0*(v2 - v4)*(v2 - v4);
+	s3 = 13.0 / 12.0*(v3 - 2.0*v4 + v5)*(v3 - 2.0*v4 + v5) + 1.0 / 4.0*(3.0*v3 - 4.0*v4 + v5)*(3.0*v3 - 4.0*v4 + v5);
+
+	a1 = 1.0 / 10.0 * 1.0 / ((DBL_EPSILON + s1)*(DBL_EPSILON + s1));
+	a2 = 6.0 / 10.0 * 1.0 / ((DBL_EPSILON + s2)*(DBL_EPSILON + s2));
+	a3 = 3.0 / 10.0 * 1.0 / ((DBL_EPSILON + s3)*(DBL_EPSILON + s3));
+
+	w1 = a1 / (a1 + a2 + a3);
+	w2 = a2 / (a1 + a2 + a3);
+	w3 = a3 / (a1 + a2 + a3);
+
+	constant = w1*(1.0 / 3.0*v1 - 7.0 / 6.0*v2 + 11.0 / 6.0*v3) + w2*(-1.0 / 6.0*v2 + 5.0 / 6.0*v3 + 1.0 / 3.0*v4) + w3*(1.0 / 3.0*v3 + 5.0 / 6.0*v4 - 1.0 / 6.0*v5);
 }
 
 
@@ -102,9 +123,6 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxXMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoXMinus)
 {
 	TT v1, v2, v3, v4, v5;
-	TT s1, s2, s3;
-	TT a1, a2, a3;
-	TT w1, w2, w3;
 
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
@@ -122,18 +140,7 @@ inline void AdvectionMethod2D<TT>::WENO5thApproxXMinus(const Field2D<TT>& ipFiel
 				v4 = (ipField(i + 1, j) - ipField(i, j))*ipField.oneOverdx;
 				v5 = (ipField(i + 2, j) - ipField(i + 1, j))*ipField.oneOverdx;
 
-				s1 = 13.0 / 12.0*(v1 - 2.0*v2 + v3)*(v1 - 2.0*v2 + v3) + 1.0 / 4.0*(v1 - 4.0*v2 + 3.0*v3)*(v1 - 4.0*v2 + 3.0*v3);
-				s2 = 13.0 / 12.0*(v2 - 2.0*v3 + v4)*(v2 - 2.0*v3 + v4) + 1.0 / 4.0*(v2 - v4)*(v2 - v4);
-				s3 = 13.0 / 12.0*(v3 - 2.0*v4 + v5)*(v3 - 2.0*v4 + v5) + 1.0 / 4.0*(3.0*v3 - 4.0*v4 + v5)*(3.0*v3 - 4.0*v4 + v5);
-
-				a1 = 1.0 / 10.0 * 1.0 / ((DBL_EPSILON + s1)*(DBL_EPSILON + s1));
-				a2 = 6.0 / 10.0 * 1.0 / ((DBL_EPSILON + s2)*(DBL_EPSILON + s2));
-				a3 = 3.0 / 10.0 * 1.0 / ((DBL_EPSILON + s3)*(DBL_EPSILON + s3));
-				w1 = a1 / (a1 + a2 + a3);
-				w2 = a2 / (a1 + a2 + a3);
-				w3 = a3 / (a1 + a2 + a3);
-
-				wenoXMinus(i, j) = w1*(1.0 / 3.0*v1 - 7.0 / 6.0*v2 + 11.0 / 6.0*v3) + w2*(-1.0 / 6.0*v2 + 5.0 / 6.0*v3 + 1.0 / 3.0*v4) + w3*(1.0 / 3.0*v3 + 5.0 / 6.0*v4 - 1.0 / 6.0*v5);
+				WENO5th(v1, v2, v3, v4, v5, wenoXMinus(i, j));
 			}
 		}
 	}
@@ -143,9 +150,6 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxXPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoXPlus)
 {
 	TT v1, v2, v3, v4, v5;
-	TT s1, s2, s3;
-	TT a1, a2, a3;
-	TT w1, w2, w3;
 
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
@@ -163,19 +167,7 @@ inline void AdvectionMethod2D<TT>::WENO5thApproxXPlus(const Field2D<TT>& ipField
 				v4 = (ipField(i, j) - ipField(i - 1, j))*ipField.oneOverdx;
 				v5 = (ipField(i - 1, j) - ipField(i - 2, j))*ipField.oneOverdx;
 
-				s1 = 13.0 / 12.0*(v1 - 2.0*v2 + v3)*(v1 - 2.0*v2 + v3) + 1.0 / 4.0*(v1 - 4.0*v2 + 3.0*v3)*(v1 - 4.0*v2 + 3.0*v3);
-				s2 = 13.0 / 12.0*(v2 - 2.0*v3 + v4)*(v2 - 2.0*v3 + v4) + 1.0 / 4.0*(v2 - v4)*(v2 - v4);
-				s3 = 13.0 / 12.0*(v3 - 2.0*v4 + v5)*(v3 - 2.0*v4 + v5) + 1.0 / 4.0*(3.0*v3 - 4.0*v4 + v5)*(3.0*v3 - 4.0*v4 + v5);
-
-				a1 = 1.0 / 10.0 * 1.0 / ((DBL_EPSILON + s1)*(DBL_EPSILON + s1));
-				a2 = 6.0 / 10.0 * 1.0 / ((DBL_EPSILON + s2)*(DBL_EPSILON + s2));
-				a3 = 3.0 / 10.0 * 1.0 / ((DBL_EPSILON + s3)*(DBL_EPSILON + s3));
-
-				w1 = a1 / (a1 + a2 + a3);
-				w2 = a2 / (a1 + a2 + a3);
-				w3 = a3 / (a1 + a2 + a3);
-
-				wenoXPlus(i, j) = w1*(1.0 / 3.0*v1 - 7.0 / 6.0*v2 + 11.0 / 6.0*v3) + w2*(-1.0 / 6.0*v2 + 5.0 / 6.0*v3 + 1.0 / 3.0*v4) + w3*(1.0 / 3.0*v3 + 5.0 / 6.0*v4 - 1.0 / 6.0*v5);
+				WENO5th(v1, v2, v3, v4, v5, wenoXPlus(i, j));
 			}
 		}
 	}
@@ -186,9 +178,6 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxYMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoYMinus)
 {
 	TT v1, v2, v3, v4, v5;
-	TT s1, s2, s3;
-	TT a1, a2, a3;
-	TT w1, w2, w3;
 
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
@@ -206,18 +195,7 @@ inline void AdvectionMethod2D<TT>::WENO5thApproxYMinus(const Field2D<TT>& ipFiel
 				v4 = (ipField(i, j + 1) - ipField(i, j))*ipField.oneOverdy;
 				v5 = (ipField(i, j + 2) - ipField(i, j + 1))*ipField.oneOverdy;
 
-				s1 = 13.0 / 12.0*(v1 - 2.0*v2 + v3)*(v1 - 2.0*v2 + v3) + 1.0 / 4.0*(v1 - 4.0*v2 + 3.0*v3)*(v1 - 4.0*v2 + 3.0*v3);
-				s2 = 13.0 / 12.0*(v2 - 2.0*v3 + v4)*(v2 - 2.0*v3 + v4) + 1.0 / 4.0*(v2 - v4)*(v2 - v4);
-				s3 = 13.0 / 12.0*(v3 - 2.0*v4 + v5)*(v3 - 2.0*v4 + v5) + 1.0 / 4.0*(3.0*v3 - 4.0*v4 + v5)*(3.0*v3 - 4.0*v4 + v5);
-
-				a1 = 1.0 / 10.0 * 1.0 / ((DBL_EPSILON + s1)*(DBL_EPSILON + s1));
-				a2 = 6.0 / 10.0 * 1.0 / ((DBL_EPSILON + s2)*(DBL_EPSILON + s2));
-				a3 = 3.0 / 10.0 * 1.0 / ((DBL_EPSILON + s3)*(DBL_EPSILON + s3));
-				w1 = a1 / (a1 + a2 + a3);
-				w2 = a2 / (a1 + a2 + a3);
-				w3 = a3 / (a1 + a2 + a3);
-
-				wenoYMinus(i, j) = w1*(1.0 / 3.0*v1 - 7.0 / 6.0*v2 + 11.0 / 6.0*v3) + w2*(-1.0 / 6.0*v2 + 5.0 / 6.0*v3 + 1.0 / 3.0*v4) + w3*(1.0 / 3.0*v3 + 5.0 / 6.0*v4 - 1.0 / 6.0*v5);
+				WENO5th(v1, v2, v3, v4, v5, wenoYMinus(i, j));
 			}
 		}
 	}
@@ -227,9 +205,6 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxYPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoYPlus)
 {
 	TT v1, v2, v3, v4, v5;
-	TT s1, s2, s3;
-	TT a1, a2, a3;
-	TT w1, w2, w3;
 
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
@@ -247,19 +222,7 @@ inline void AdvectionMethod2D<TT>::WENO5thApproxYPlus(const Field2D<TT>& ipField
 				v4 = (ipField(i, j) - ipField(i, j - 1))*ipField.oneOverdy;
 				v5 = (ipField(i, j - 1) - ipField(i, j - 2))*ipField.oneOverdy;
 
-				s1 = 13.0 / 12.0*(v1 - 2.0*v2 + v3)*(v1 - 2.0*v2 + v3) + 1.0 / 4.0*(v1 - 4.0*v2 + 3.0*v3)*(v1 - 4.0*v2 + 3.0*v3);
-				s2 = 13.0 / 12.0*(v2 - 2.0*v3 + v4)*(v2 - 2.0*v3 + v4) + 1.0 / 4.0*(v2 - v4)*(v2 - v4);
-				s3 = 13.0 / 12.0*(v3 - 2.0*v4 + v5)*(v3 - 2.0*v4 + v5) + 1.0 / 4.0*(3.0*v3 - 4.0*v4 + v5)*(3.0*v3 - 4.0*v4 + v5);
-
-				a1 = 1.0 / 10.0 * 1.0 / ((DBL_EPSILON + s1)*(DBL_EPSILON + s1));
-				a2 = 6.0 / 10.0 * 1.0 / ((DBL_EPSILON + s2)*(DBL_EPSILON + s2));
-				a3 = 3.0 / 10.0 * 1.0 / ((DBL_EPSILON + s3)*(DBL_EPSILON + s3));
-
-				w1 = a1 / (a1 + a2 + a3);
-				w2 = a2 / (a1 + a2 + a3);
-				w3 = a3 / (a1 + a2 + a3);
-
-				wenoYPlus(i, j) = w1*(1.0 / 3.0*v1 - 7.0 / 6.0*v2 + 11.0 / 6.0*v3) + w2*(-1.0 / 6.0*v2 + 5.0 / 6.0*v3 + 1.0 / 3.0*v4) + w3*(1.0 / 3.0*v3 + 5.0 / 6.0*v4 - 1.0 / 6.0*v5);
+				WENO5th(v1, v2, v3, v4, v5, wenoYPlus(i, j));
 			}
 		}
 	}
@@ -280,41 +243,32 @@ inline void AdvectionMethod2D<TT>::levelSetReinitializationTVDRK3(LevelSet2D& le
 	Field2D<TT> wenoYMinus(levelSet.grid);
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
 		{
-			k1(i, j) = -sign(originLevelSet(i, j))*dt*reinitialGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), levelSet(i, j));
+			k1(i, j) = -sign(originLevelSet(i, j))*dt*reinitialGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), originLevelSet(i, j));
 			levelSet(i, j) = originLevelSet(i, j) + k1(i, j);
 		}
 	}
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
 		{
-			k2(i, j) = -sign(originLevelSet(i, j))*dt*reinitialGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), levelSet(i, j));
+			k2(i, j) = -sign(originLevelSet(i, j))*dt*reinitialGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), originLevelSet(i, j));
 			levelSet(i, j) = 3.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*k2(i, j);
 		}
 	}
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
 		{
-			k3(i, j) = -sign(originLevelSet(i, j))*dt*reinitialGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), levelSet(i, j));
+			k3(i, j) = -sign(originLevelSet(i, j))*dt*reinitialGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), originLevelSet(i, j));
 			levelSet(i, j) = 1.0 / 3.0*originLevelSet(i, j) + 2.0 / 3.0*levelSet(i, j) + 2.0 / 3.0*k3(i, j);
 		}
 	}
@@ -359,10 +313,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	Field2D<TT> wenoYMinus(levelSet.grid);
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -372,23 +323,17 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 		}
 	}
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
 		{
 			k2(i, j) = -dt*propagatingGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), 1);
-			levelSet(i, j) = 3.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*k2(i, j);
+			levelSet(i, j) = 3.0 / 4.0*originLevelSet(i, j) + 1.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*k2(i, j);
 		}
 	}
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -415,10 +360,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	Field2D<TT> wenoYMinus(levelSet.grid);
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -428,28 +370,22 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 		}
 	}
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
 		{
-			k2(i, j) = -dt*velocity(i, j)*velocity(i, j)*propagatingGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), -1);
-			levelSet(i, j) = 3.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*k2(i, j);
+			k2(i, j) = -dt*velocity(i, j)*propagatingGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), -1);
+			levelSet(i, j) = 3.0 / 4.0*originLevelSet(i, j) + 1.0 / 4.0*levelSet(i, j) + 1.0 / 4.0*k2(i, j);
 		}
 	}
 
-	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
-	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
-	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
-	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
 		{
-			k3(i, j) = -dt*velocity(i, j)*velocity(i, j)*propagatingGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), -1);
+			k3(i, j) = -dt*velocity(i, j)*propagatingGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), -1);
 			levelSet(i, j) = 1.0 / 3.0*originLevelSet(i, j) + 2.0 / 3.0*levelSet(i, j) + 2.0 / 3.0*k3(i, j);
 		}
 	}
@@ -557,6 +493,30 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 			}
 			k3(i, j) = -velocityX(i, j)*dt*tempDxPhi - velocityY(i, j)*dt*tempDyPhi;
 			levelSet(i, j) = 1.0 / 3.0*originLevelSet(i, j) + 2.0 / 3.0*levelSet(i, j) + 2.0 / 3.0*k3(i, j);
+		}
+	}
+}
+
+template<class TT>
+inline void AdvectionMethod2D<TT>::levelSetPropagatingEuler(LevelSet2D & levelSet, const Field2D<double>& velocity, const double & dt)
+{
+	LevelSet2D tempLevelSet(levelSet.grid);
+
+	Field2D<TT> wenoXMinus(levelSet.grid);
+	Field2D<TT> wenoXPlus(levelSet.grid);
+	Field2D<TT> wenoYMinus(levelSet.grid);
+	Field2D<TT> wenoYPlus(levelSet.grid);
+
+	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
+	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
+	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
+	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+
+	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
+	{
+		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
+		{
+			levelSet(i, j) = levelSet(i, j) - dt*velocity(i, j)*propagatingGodunov(wenoXPlus(i, j), wenoXMinus(i, j), wenoYPlus(i, j), wenoYMinus(i, j), 1);
 		}
 	}
 }
