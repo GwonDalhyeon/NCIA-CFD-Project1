@@ -3,7 +3,7 @@
 #include "CSR.h"
 #include "GridInfomation.h"
 
-#include "LinearEquationSolver.h"
+#include "LinearSolver.h"
 
 class NSEquationSolver
 {

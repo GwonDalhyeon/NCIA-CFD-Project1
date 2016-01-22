@@ -1,7 +1,5 @@
 #pragma once
-#include <assert.h>
-#include <iostream>
-#define PI 3.141592
+#include"CommonDef.h"
 
 template <class TT>
 class VectorND

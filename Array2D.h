@@ -1,6 +1,4 @@
 #pragma once
-#include <assert.h>
-#include <iostream>
 #include "Grid2D.h"
 
 template <class TT>

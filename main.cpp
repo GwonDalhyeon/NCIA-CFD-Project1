@@ -2,15 +2,18 @@
 
 #include "AdvectionMethod2D.h"
 #include "SurfaceReconstruction.h"
+#include "LevelSetReinitializationProblem.h"
 
 void main()
 {
 
 	//SurfaceReconst<double>::alpha = min(testGrid2d.dx, testGrid2d.dy);
-	SurfaceReconst<double> surface;
-	
-	surface.surfaceReconstructionSolver(2);
 
+	//SurfaceReconst<double> surface;
+	//surface.surfaceReconstructionSolver(2);
+	
+	Reinitialzation reinitial;
+	reinitial. reinitializationSolver(4);
 	
 	//PoissonSolver testPoisson2d;
 	//testPoisson2d.solvePoissonJumpCondi(2, testGrid2d);

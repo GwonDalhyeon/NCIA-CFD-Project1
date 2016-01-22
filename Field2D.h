@@ -72,9 +72,8 @@ public:
 		return dataArray(i, j);
 	}
 
-	inline TT& operator ()(const double& x, const double& y) const
+	inline TT operator ()(const double& x, const double& y) const
 	{
-
 		assert(x >= xMin && x <= xMax);
 		assert(y >= yMin && y <= yMax);
 		//TT& a=x;// = interpolation(x, y);
@@ -92,7 +91,7 @@ public:
 		distance01 = (grid(cell.i, cell.j + 1) - xy).magnitude();
 		distance11 = (grid(cell.i + 1, cell.j + 1) - xy).magnitude();
 
-		//return ((dataArray(cell)*distance00 + dataArray(cell.i + 1, cell.j)*distance10 + dataArray(cell.i, cell.j + 1)*distance01 + dataArray(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
+		return ((dataArray(cell)*distance00 + dataArray(cell.i + 1, cell.j)*distance10 + dataArray(cell.i, cell.j + 1)*distance01 + dataArray(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
 		//return dataArray(1,1);
 	}
 
@@ -111,7 +110,7 @@ public:
 
 	inline Vector2D<double> gradient(const int& i, const int& j);
 
-	inline TT minmod(const TT& constant1, const TT constant2);
+	inline TT minmod(const TT& constant1, const TT constant2) const;
 
 	// Derivative
 	inline TT dxxPhi(const int& i, const int& j) const;
@@ -244,7 +243,7 @@ inline Vector2D<double> Field2D<TT>::gradient(const int & i, const int & j)
 }
 
 template<class TT>
-inline TT Field2D<TT>::minmod(const TT & constant1, const TT constant2)
+inline TT Field2D<TT>::minmod(const TT & constant1, const TT constant2) const
 {
 	if (constant1*constant2<0)
 	{
@@ -289,7 +288,7 @@ inline TT Field2D<TT>::dxPhi(const int & i, const int & j) const
 
 	if (i > grid.iStart && i < grid.iEnd)
 	{
-		return (dataArray(i + 1, j) - dataArray(i - 1, j))*grid.oneOver2dx - grid.dx / 2.0*minmod(dxxPhi(i, j), dxxPhi(i + 1, j));
+		return (dataArray(i + 1, j) - dataArray(i - 1, j))*grid.oneOver2dx;// -grid.dx / 2.0*minmod(dxxPhi(i, j), dxxPhi(i + 1, j));
 	}
 	else if (i == grid.iStart)
 	{
@@ -361,7 +360,7 @@ inline TT Field2D<TT>::dyPhi(const int & i, const int & j) const
 
 	if (j > grid.jStart && j < grid.jEnd)
 	{
-		return (dataArray(i, j + 1) - dataArray(i, j - 1))*grid.oneOver2dy - grid.dy / 2.0*minmod(dyyPhi(i, j), dyyPhi(i, j + 1));
+		return (dataArray(i, j + 1) - dataArray(i, j - 1))*grid.oneOver2dy;// -grid.dy / 2.0*minmod(dyyPhi(i, j), dyyPhi(i, j + 1));
 	}
 	else if (j == grid.jStart)
 	{

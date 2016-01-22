@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "LevelSet2D.h"
 
 template <class TT>
@@ -24,9 +23,10 @@ public:
 	static void WENO5thApproxYMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoYMinus);
 	static void WENO5thApproxYPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoYPlus);
 
-
 	static void levelSetReinitializationTVDRK3(LevelSet2D& levelSet, const double& dt);
 	static TT reinitialGodunov(const TT& dxPlus, const TT& dxMinus, const TT& dyPlus, const TT& dyMinus, const TT& phi);
+	static void levelSetReinitializationFE(LevelSet2D& levelSet, const double& dt, const double& cfl);
+	static void levelSetReinitializationGS(LevelSet2D& levelSet, const double& dt);
 
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const double& dt);
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const Field2D<double>& velocity, const double& dt);
@@ -35,7 +35,6 @@ public:
 	static void levelSetPropagatingEuler(LevelSet2D& levelSet, const Field2D<double>& velocity, const double& dt);
 
 	static TT propagatingGodunov(const TT& dxPlus, const TT& dxMinus, const TT& dyPlus, const TT& dyMinus, const TT& sign);
-
 private:
 
 };

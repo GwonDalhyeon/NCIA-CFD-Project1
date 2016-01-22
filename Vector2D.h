@@ -1,7 +1,6 @@
 #pragma once
-#include <assert.h>
-#include <iostream>
-#define PI 3.141592
+#include "CommonDef.h"
+
 
 template <class TT>
 class Vector2D
@@ -135,6 +134,7 @@ public:
 	}
 
 	TT magnitude();
+	TT magnitude2();
 
 	void normalize();
 
@@ -179,6 +179,12 @@ template<class TT>
 inline TT Vector2D<TT>::magnitude()
 {
 	return TT(sqrt(x*x + y*y));
+}
+
+template<class TT>
+inline TT Vector2D<TT>::magnitude2()
+{
+	return TT(x*x + y*y);
 }
 
 template<class TT>

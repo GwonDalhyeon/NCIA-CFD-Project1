@@ -1,6 +1,4 @@
 #pragma once
-#include <algorithm>
-
 #include "AdvectionMethod2D.h"
 #include "PoissonSolver.h"
 
@@ -21,6 +19,8 @@ public:
 	double dt;
 
 	double LpNorm;
+	double distanceThreshold;
+	double curvatureThreshold;
 
 	SurfaceReconst();
 	~SurfaceReconst();
@@ -32,6 +32,7 @@ public:
 	void distance2Data(const int& i, const int& j);
 	void exactDistance();
 
+	// surface reconstruction problem solver
 	void initialCondition(int example);
 
 	void computeVelocity();
@@ -42,6 +43,8 @@ public:
 
 	bool stoppingCriterion();
 
+
+	// write results
 	void outputResult();
 	void outputResult(const int& iter);
 private:
@@ -207,6 +210,8 @@ inline void SurfaceReconst<TT>::initialCondition(int example)
 		givenPoint = Array2D<Vector2D<double>>(1, 18);
 		dt = grid.dx*grid.dy / 2.0;
 		LpNorm = 2;
+		distanceThreshold = 10*grid.dx;
+		curvatureThreshold = (grid.xMax - grid.xMin) * 10;
 
 		for (int i = 0; i < 5; i++)
 		{
@@ -248,10 +253,12 @@ inline void SurfaceReconst<TT>::initialCondition(int example)
 		distance = Field2D<double>(grid);
 		distance.dataArray = 100;
 		velocity = Field2D<double>(grid);
-		givenPointNum = 50;
+		givenPointNum = 100;
 		givenPoint = Array2D<Vector2D<double>>(1, givenPointNum);
-		dt = grid.dx*grid.dy / 2.0;
+		dt = 5*grid.dx*grid.dy / 2.0;
 		LpNorm = 2;
+		distanceThreshold = 10 * grid.dx;
+		curvatureThreshold = (grid.xMax - grid.xMin) * 10;
 
 		for (int i = 0; i < givenPointNum; i++)
 		{
@@ -292,21 +299,21 @@ inline void SurfaceReconst<TT>::initialCondition(int example)
 		//	}
 		//}
 
-		//for (int i = grid.iStart; i <= grid.iEnd; i++)
-		//{
-		//	for (int j = grid.jStart; j <= grid.jEnd; j++)
-		//	{
-		//		levelSet.phi(i, j) = -(grid(i, j) - 0.5).magnitude() + 0.4;
-		//	}
-		//}
-
 		for (int i = grid.iStart; i <= grid.iEnd; i++)
 		{
 			for (int j = grid.jStart; j <= grid.jEnd; j++)
 			{
-				levelSet.phi(i, j) = -(abs((grid(i, j) - 0.5).x) + abs((grid(i, j) - 0.5).y) - 0.28*sqrt(2));
+				levelSet.phi(i, j) = -(grid(i, j) - 0.5).magnitude() + 0.28;
 			}
 		}
+
+		//for (int i = grid.iStart; i <= grid.iEnd; i++)
+		//{
+		//	for (int j = grid.jStart; j <= grid.jEnd; j++)
+		//	{
+		//		levelSet.phi(i, j) = -(abs((grid(i, j) - 0.5).x) + abs((grid(i, j) - 0.5).y) - 0.28*sqrt(2));
+		//	}
+		//}
 
 	}
 
@@ -319,6 +326,10 @@ inline void SurfaceReconst<TT>::computeVelocity()
 	double integralTerm = computeIntegralTerm();
 	double lastTerm;
 	Vector2D <double> gradPhi;
+
+	double tempDist;
+	double tempCurvature;
+
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
 		for (int j = grid.jStart; j <= grid.jEnd; j++)
@@ -330,15 +341,29 @@ inline void SurfaceReconst<TT>::computeVelocity()
 			}
 			else
 			{
-				lastTerm = dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) + 1.0 / LpNorm*distance(i, j)*levelSet.meanCurvature(i, j);
+				//lastTerm = dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) + 1.0 / LpNorm*distance(i, j)*levelSet.meanCurvature(i, j);
+				tempDist = min(distance(i, j), distanceThreshold);
+				tempCurvature = AdvectionMethod2D<double>::sign(levelSet.meanCurvature(i, j))* min(abs(levelSet.meanCurvature(i, j)), curvatureThreshold);
+				lastTerm = dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) + 1.0 / LpNorm*tempDist*tempCurvature;
 			}
-			velocity(i, j) = gradPhi.magnitude()*integralTerm*pow(distance(i, j), LpNorm - 1)*lastTerm;
 
-			//cout << i << " " << j << endl;
-			//cout << "grad : "<<gradPhi << endl;
-			//cout << "last : " << lastTerm << endl;
-			//cout << "velo : " << velocity(i, j) << endl;
-			//cout << endl;
+			//velocity(i, j) = gradPhi.magnitude()*integralTerm*pow(distance(i, j), LpNorm - 1)*lastTerm;
+			velocity(i, j) = gradPhi.magnitude()*integralTerm*pow(min(distance(i, j),distanceThreshold), LpNorm - 1)*lastTerm;
+
+			if (i < 1 && j < 1)
+			{
+				cout << i << " " << j << endl;
+				cout << "inte : " << integralTerm << endl;
+				cout << "dist : " << distance(i, j) << endl;
+				cout << "disG : " << distance.gradient(i, j) << endl;
+				cout << "phiG : " << gradPhi << endl;
+				cout << "phiG : " << gradPhi.magnitude() << endl;
+				cout << "dotP : " << dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) << endl;
+				cout << "curv : " << levelSet.meanCurvature(i, j) << endl;
+				cout << "last : " << lastTerm << endl;
+				cout << "velo : " << velocity(i, j) << endl;
+				cout << endl;
+			}
 		}
 	}
 }
@@ -353,6 +378,7 @@ inline double SurfaceReconst<TT>::computeIntegralTerm()
 		for (int j = grid.jStart; j <= grid.jEnd; j++)
 		{
 			sum += pow(distance(i, j), LpNorm)*AdvectionMethod2D<double>::deltaFt(levelSet(i, j))*levelSet.gradient(i, j).magnitude()*grid.dx*grid.dy;
+			//cout << i << " " << j << endl;
 			//cout << "distance : " << pow(distance(i, j), LpNorm) << endl;
 			//cout << "deltaft  : " << AdvectionMethod2D<double>::deltaFt(levelSet(i, j)) << endl;
 			//cout << "gradient : " << levelSet.gradient(i, j) << endl;
@@ -419,17 +445,17 @@ inline void SurfaceReconst<TT>::surfaceReconstructionSolver(int example)
 
 	AdvectionMethod2D<double>::alpha = min(grid.dx, grid.dy); // delta function parameter.
 
-	for (int j = 0; j < 100; j++)
-	{
-		cout << "Reinitialization : " << j+1 << endl;
-		AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, dt);
-	}
+	//for (int j = 0; j < 100; j++)
+	//{
+	//	cout << "Reinitialization : " << j+1 << endl;
+	//	AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, dt);
+	//}
 
 	outputResult(0);
 	outputResult();
 
 	int i = 0;
-	while (!stoppingCriterion())
+	while (!stoppingCriterion() && i<500)
 	{
 		i++;
 		cout << "Iteration : " << i << endl;
@@ -438,13 +464,14 @@ inline void SurfaceReconst<TT>::surfaceReconstructionSolver(int example)
 		//AdvectionMethod2D<double> ::levelSetPropagatingTVDRK3(levelSet, dt);
 		//AdvectionMethod2D<double>::levelSetPropagatingEuler(levelSet, velocity, dt);
 
+
 		for (int j = 0; j < 10; j++)
 		{
 			cout << "Reinitialization : " << i << "-" << j + 1 << endl;
 			AdvectionMethod2D<double>::levelSetReinitializationTVDRK3(levelSet, dt);
 		}
 
-		if (i % 10 == 0)
+		if (i % 1 == 0)
 		{
 			outputResult(i);
 		}
@@ -482,35 +509,31 @@ inline void SurfaceReconst<TT>::outputResult()
 
 	ofstream solutionFile1;
 	solutionFile1.open("D:\\Data/phi.txt", ios::binary);
+
+	ofstream solutionFile2;
+	solutionFile2.open("D:\\Data/distance.txt", ios::binary);
+
+
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
-		for (int j = grid.jStart; j < grid.jEnd; j++)
+		for (int j = grid.jStart; j <= grid.jEnd; j++)
 		{
 			solutionFile1 << i << " " << j << " " << grid(i, j) << " " << levelSet(i, j) << endl;
+			solutionFile2 << i << " " << j << " " << grid(i, j) << " " << distance(i, j) << endl;
 		}
 	}
 	solutionFile1.close();
-
-
-	ofstream solutionFile2;
-	solutionFile2.open("D:\\Data/pointData.txt", ios::binary);
-	for (int i = givenPoint.iStart; i <= givenPoint.iEnd; i++)
-	{
-		for (int j = givenPoint.jStart; j <= givenPoint.jEnd; j++)
-		{
-			solutionFile2 << givenPoint(i, j) << endl;
-		}
-	}
 	solutionFile2.close();
 
 
 	ofstream solutionFile3;
-	solutionFile3.open("D:\\Data/distance.txt", ios::binary);
-	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	solutionFile3.open("D:\\Data/pointData.txt", ios::binary);
+
+	for (int i = givenPoint.iStart; i <= givenPoint.iEnd; i++)
 	{
-		for (int j = grid.jStart; j < grid.jEnd; j++)
+		for (int j = givenPoint.jStart; j <= givenPoint.jEnd; j++)
 		{
-			solutionFile3 << i << " " << j << " " << grid(i, j) << " " << distance(i, j) << endl;
+			solutionFile3 << givenPoint(i, j) << endl;
 		}
 	}
 	solutionFile3.close();
@@ -526,12 +549,16 @@ inline void SurfaceReconst<TT>::outputResult(const int & iter)
 {
 	ofstream solutionFile1;
 	solutionFile1.open("D:\\Data/phi" + to_string(iter) + ".txt", ios::binary);
+	ofstream solutionFile2;
+	solutionFile2.open("D:\\Data/velocity" + to_string(iter) + ".txt", ios::binary);
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
-		for (int j = grid.jStart; j < grid.jEnd; j++)
+		for (int j = grid.jStart; j <= grid.jEnd; j++)
 		{
 			solutionFile1 << i << " " << j << " " << grid(i, j) << " " << levelSet(i, j) << endl;
+			solutionFile2 << i << " " << j << " " << grid(i, j) << " " << velocity(i, j) << endl;
 		}
 	}
 	solutionFile1.close();
+	solutionFile2.close();
 }

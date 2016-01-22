@@ -46,7 +46,7 @@ public:
 		return phi(ipVector);
 	}
 
-	inline double& operator ()(const double& x, const double& y) const
+	inline double operator ()(const double& x, const double& y) const
 	{
 		assert(x >= grid.xMin && x <= grid.xMax);
 		assert(y >= grid.yMin && y <= grid.yMax);
@@ -54,7 +54,7 @@ public:
 		return phi(x, y);
 	}
 
-	inline double& operator ()(const Vector2D<double>& ipVector) const
+	inline double operator ()(const Vector2D<double>& ipVector) const
 	{
 		assert(ipVector[0] >= grid.xMin && ipVector[0] <= grid.xMax);
 		assert(ipVector[1] >= grid.yMin && ipVector[1] <= grid.yMax);

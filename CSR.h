@@ -1,9 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
 #include "Array2D.h"
 #include "VectorND.h"
 

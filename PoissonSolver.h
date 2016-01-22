@@ -1,8 +1,4 @@
 #pragma once
-
-#include <iostream>
-#include <time.h>
-
 #include "CSR.h"
 #include "Grid2D.h"
 #include "LevelSet2D.h"
