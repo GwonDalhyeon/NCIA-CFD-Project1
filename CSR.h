@@ -55,7 +55,7 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 	TT* tempVal = new TT[int(floor(sqrt(double(rowNum*colNum)))) * 10];
 	int* tempCol = new int[int(floor(sqrt(double(rowNum*colNum)))) * 10];
 	
-
+#pragma omp parallel for
 	for (int i = 0; i < rowNum+1; i++)
 	{
 		indPrt[i] = -1;
@@ -86,6 +86,7 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 	values = VectorND<TT>(valueNum);
 	columns = VectorND<int>(valueNum);
 
+#pragma omp parallel for
 	for (int i = 0; i < valueNum; i++)
 	{
 		values[i] = tempVal[i];

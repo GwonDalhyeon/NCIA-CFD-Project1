@@ -592,6 +592,7 @@ inline void SurfaceReconst<TT>::surfaceReconstructionSolver(int example)
 		{
 			outputResult(i);
 		}
+		cout << endl;
 	}
 
 	outputResult(i);

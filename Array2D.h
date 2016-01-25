@@ -380,6 +380,7 @@ inline void Array2D<TT>::initialize(const int & iS, const int & iE, const int & 
 template<class TT>
 inline void Array2D<TT>::initialValues()
 {
+#pragma omp parallel for
 	for (int i = 0; i < ijRes; i++)
 	{
 		values[i] = 0;

@@ -523,6 +523,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingEuler(LevelSet2D & levelSe
 	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
 	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
 
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)

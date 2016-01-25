@@ -30,6 +30,7 @@ public:
 
 	inline void operator = (const TT& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] = constant;
@@ -47,6 +48,7 @@ public:
 		
 		values = new TT[iLength];
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] =ipVector.values[i];

@@ -49,6 +49,7 @@ inline void Reinitialzation::initialCondition(const int& example)
 
 	if (example == 1) //// Exmple1. A circle with center at the origen and radius 1.
 	{
+#pragma omp parallel for
 		for (int i = grid.iStart; i <= grid.jEnd; i++)
 		{
 			for (int j = grid.jStart; j <= grid.jEnd; j++)
@@ -62,6 +63,7 @@ inline void Reinitialzation::initialCondition(const int& example)
 	{
 
 		double temp1, temp2, temp3;
+#pragma omp parallel for private(temp1,temp2,temp3)
 		for (int i = grid.iStart; i <= grid.jEnd; i++)
 		{
 			for (int j = grid.jStart; j <= grid.jEnd; j++)
@@ -112,6 +114,7 @@ inline void Reinitialzation::initialCondition(const int& example)
 	}
 	else if (example == 4)
 	{
+#pragma omp parallel for
 		for (int i = grid.iStart; i <= grid.jEnd; i++)
 		{
 			for (int j = grid.jStart; j <= grid.jEnd; j++)
