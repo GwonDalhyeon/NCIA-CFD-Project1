@@ -122,7 +122,7 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxXMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoXMinus)
 {
 	TT v1, v2, v3, v4, v5;
-
+#pragma omp parallel for private(v1,v2,v3,v4,v5)
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
 		for (int j = ipField.jStart; j <= ipField.jEnd; j++)
@@ -149,7 +149,7 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxXPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoXPlus)
 {
 	TT v1, v2, v3, v4, v5;
-
+#pragma omp parallel for private(v1,v2,v3,v4,v5)
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
 		for (int j = ipField.jStart; j <= ipField.jEnd; j++)
@@ -177,7 +177,7 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxYMinus(const Field2D<TT>& ipField, Field2D<TT>& wenoYMinus)
 {
 	TT v1, v2, v3, v4, v5;
-
+#pragma omp parallel for private(v1,v2,v3,v4,v5)
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
 		for (int j = ipField.jStart; j <= ipField.jEnd; j++)
@@ -204,7 +204,7 @@ template<class TT>
 inline void AdvectionMethod2D<TT>::WENO5thApproxYPlus(const Field2D<TT>& ipField, Field2D<TT>& wenoYPlus)
 {
 	TT v1, v2, v3, v4, v5;
-
+#pragma omp parallel for private(v1,v2,v3,v4,v5)
 	for (int i = ipField.iStart; i <= ipField.iEnd; i++)
 	{
 		for (int j = ipField.jStart; j <= ipField.jEnd; j++)
@@ -243,6 +243,7 @@ inline void AdvectionMethod2D<TT>::levelSetReinitializationTVDRK3(LevelSet2D& le
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -253,6 +254,7 @@ inline void AdvectionMethod2D<TT>::levelSetReinitializationTVDRK3(LevelSet2D& le
 	}
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -263,6 +265,7 @@ inline void AdvectionMethod2D<TT>::levelSetReinitializationTVDRK3(LevelSet2D& le
 	}
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -313,6 +316,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -323,6 +327,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	}
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -333,6 +338,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	}
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -360,6 +366,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -370,6 +377,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	}
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -380,6 +388,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	}
 
 	WENO5th(levelSet.phi, wenoXMinus, wenoXPlus, wenoYMinus, wenoYPlus);
+#pragma omp parallel for
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -411,6 +420,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
 	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
 	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+#pragma omp parallel for private(tempDxPhi, tempDyPhi)
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -441,6 +451,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
 	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
 	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+#pragma omp parallel for private(tempDxPhi, tempDyPhi)
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)
@@ -470,6 +481,7 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
 	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
 	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+#pragma omp parallel for private(tempDxPhi, tempDyPhi)
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{
 		for (int j = levelSet.grid.jStart; j <= levelSet.grid.jEnd; j++)

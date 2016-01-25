@@ -56,6 +56,7 @@ public:
 	inline void operator += (const VectorND<TT>& ipVector)
 	{
 		assert(iLength == ipVector.iLength);
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] += ipVector.values[i];
@@ -65,6 +66,7 @@ public:
 	inline void operator -= (const VectorND<TT>& ipVector)
 	{
 		assert(iLength == ipVector.iLength);
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] -= ipVector.values[i];
@@ -74,6 +76,7 @@ public:
 	inline void operator /= (const VectorND<TT>& ipVector)
 	{
 		assert(iLength == ipVector.iLength);
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] /= ipVector.values[i];
@@ -83,6 +86,7 @@ public:
 	inline void operator *= (const VectorND<TT>& ipVector)
 	{
 		assert(iLength == ipVector.iLength);
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] *= ipVector.values[i];
@@ -91,6 +95,7 @@ public:
 
 	inline void operator += (const TT& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] += constant;
@@ -99,6 +104,7 @@ public:
 
 	inline void operator -= (const TT& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] -= constant;
@@ -107,6 +113,7 @@ public:
 
 	inline void operator *= (const TT& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] *= constant;
@@ -115,7 +122,8 @@ public:
 
 	inline void operator /= (const TT& constant)
 	{
-		assert(constant>0 || constant<0)
+		assert(constant > 0 || constant < 0);
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			values[i] /= constant;
@@ -128,6 +136,7 @@ public:
 
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = values[i] + ipVector.values[i];
@@ -141,6 +150,7 @@ public:
 
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = values[i] - ipVector.values[i];
@@ -154,6 +164,7 @@ public:
 
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = values[i] * ipVector.values[i];
@@ -167,6 +178,7 @@ public:
 
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			assert(ipVector.values[i]>0 && ipVector.values[i]<0);
@@ -179,6 +191,7 @@ public:
 	{
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = ipVector.values[i] + constant;
@@ -190,6 +203,7 @@ public:
 	{
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = ipVector.values[i] - constant;
@@ -201,6 +215,7 @@ public:
 	{
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = ipVector.values[i] * constant;
@@ -213,6 +228,7 @@ public:
 		assert(constant != 0);
 		VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 		for (int i = 0; i < iLength; i++)
 		{
 			returnVT.values[i] = ipVector.values[i] / constant;
@@ -249,6 +265,7 @@ inline VectorND<TT>::VectorND(const int & ipLength)
 {
 	values = new TT[ipLength];
 	iLength = ipLength;
+#pragma omp parallel for
 	for (int i = 0; i < iLength; i++)
 	{
 		values[i] = 0;
@@ -268,6 +285,7 @@ inline VectorND<TT>::VectorND(const VectorND<TT>& ipVector)
 	iLength = ipVector.iLength;
 	values = new TT[iLength];
 
+#pragma omp parallel for
 	for (int i = 0; i < iLength; i++)
 	{
 		values[i] = ipVector[i];
@@ -306,6 +324,7 @@ inline VectorND<TT> operator + (const TT& constant, const VectorND<TT>& ipVector
 {
 	VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 	for (int i = 0; i < iLength; i++)
 	{
 		returnVT.values[i] = constant + ipVector.values[i];
@@ -317,7 +336,7 @@ template<class TT>
 inline VectorND<TT> operator - (const TT& constant, const VectorND<TT>& ipVector)
 {
 	VectorND<TT> returnVT(ipVector.iLength);
-
+#pragma omp parallel for
 	for (int i = 0; i < iLength; i++)
 	{
 		returnVT.values[i] = constant - ipVector.values[i];
@@ -329,7 +348,7 @@ template<class TT>
 inline VectorND<TT> operator *(const TT& constant, const VectorND<TT>& ipVector)
 {
 	VectorND<TT> returnVT(ipVector.iLength);
-
+#pragma omp parallel for
 	for (int i = 0; i < ipVector.iLength; i++)
 	{
 		returnVT.values[i] = constant * ipVector.values[i];
@@ -342,6 +361,7 @@ inline VectorND<TT> operator / (const TT& constant, const VectorND<TT>& ipVector
 {
 	VectorND<TT> returnVT(ipVector.iLength);
 
+#pragma omp parallel for
 	for (int i = 0; i < iLength; i++)
 	{
 		assert(ipVector.values[i] != 0);

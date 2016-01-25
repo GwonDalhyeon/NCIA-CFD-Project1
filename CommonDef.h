@@ -11,7 +11,7 @@
 #include <complex>
 #include <algorithm>
 #include <string>
-
+#include <omp.h>
 
 //#include "MACROS.h"
 //#include "VECTOR_2D.h"

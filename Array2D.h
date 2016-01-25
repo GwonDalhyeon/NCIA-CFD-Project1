@@ -79,6 +79,7 @@ public:
 	
 	inline void operator =(const double& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] = constant;
@@ -87,6 +88,7 @@ public:
 
 	inline void operator *=(const double& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] *= constant;
@@ -95,6 +97,7 @@ public:
 
 	inline void operator +=(const double& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] += constant;
@@ -103,6 +106,7 @@ public:
 
 	inline void operator -=(const double& constant)
 	{
+#pragma omp parallel for
 		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] -= constant;
@@ -113,6 +117,7 @@ public:
 	{
 		assert(constant != 0);
 		
+#pragma omp parallel for
 		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] *= 1/constant;
@@ -130,7 +135,7 @@ public:
 		assert(ijRes > 0);
 
 		values = new TT[ijRes];
-
+#pragma omp parallel for
 		for (int i = 0; i < ijRes; i++)
 		{
 			values[i] = ipArray.values[i];
@@ -141,6 +146,7 @@ public:
 	{
 		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 		
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = value[i] + ipArray.values[i];
@@ -152,6 +158,7 @@ public:
 	{
 		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = value[i] - ipArray.values[i];
@@ -163,6 +170,7 @@ public:
 	{
 		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = value[i] * ipArray.values[i];
@@ -174,6 +182,7 @@ public:
 	{
 		Array2D<TT> tempArray(ipArray.iStart, ipArray.iRes, ipArray.jStart, ipArray.jRes);
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			if (ipArray.values[i]!=0)
@@ -188,6 +197,7 @@ public:
 	{
 		Array2D<TT> tempArray = this;
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = constant + ipArray.values[i];
@@ -199,6 +209,7 @@ public:
 	{
 		Array2D<TT> tempArray = this;
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = ipArray.values[i] - constant;
@@ -210,6 +221,7 @@ public:
 	{
 		Array2D<TT> tempArray = this;
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = ipArray.values[i] - constant;
@@ -222,6 +234,7 @@ public:
 		assert(constant != 0);
 		Array2D<TT> tempArray = this;
 
+#pragma omp parallel for
 		for (int i = 0; i < tempArray.ijRes; i++)
 		{
 			tempArray.values[i] = ipArray.values[i] - constant;
@@ -326,6 +339,7 @@ inline Array2D<TT>::Array2D(const Array2D<TT>& ipArray)
 
 	values = new TT[ijRes];
 
+#pragma omp parallel for
 	for (int i = 0; i < ijRes; i++)
 	{
 		values[i] = ipArray.values[i];
@@ -344,6 +358,7 @@ inline Array2D<TT>::Array2D(const Grid2D & ipGrid)
 
 	values = new TT[ijRes];
 
+#pragma omp parallel for
 	for (int i = 0; i < ijRes; i++)
 	{
 		values[i] = 0;

@@ -116,6 +116,7 @@ inline LevelSet2D::LevelSet2D(const Grid2D & ipGrid)
 
 inline void LevelSet2D::computeNormal()
 {
+#pragma omp parallel for
 	for (int j = phi.jStart; j <= phi.jEnd; j++)
 	{
 		for (int i = phi.iStart; i <= phi.iEnd; i++)
@@ -218,6 +219,7 @@ inline Vector2D<double> LevelSet2D::computeNormal(const Vector2D<int> ipVector)
 
 inline void LevelSet2D::computeUnitNormal()
 {
+#pragma omp parallel for
 	for (int j = phi.jStart; j <= phi.jEnd; j++)
 	{
 		for (int i = phi.iStart; i <= phi.iEnd; i++)
@@ -318,6 +320,7 @@ inline Vector2D<double> LevelSet2D::computeUnitNormal(const Vector2D<int> ipVect
 
 inline void LevelSet2D::computeMeanCurvature()
 {
+#pragma omp parallel for
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
 		for (int j = grid.iStart; j <= grid.jEnd; j++)
