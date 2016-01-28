@@ -76,7 +76,9 @@ public:
 	inline Vector2D<double> gradient(const int& i, const int& j);
 
 	inline double interpolation(const double& x, const double& y);
-	inline double interpolation(const Vector2D<double>& ipVector) ;
+	inline double interpolation(const Vector2D<double>& ipVector);
+	inline double interpolation(const int& i, const int& j);
+	//inline double interpolation(const Vector2D<int>& ipVector);
 
 	// Derivative
 	inline double dxxPhi(const int& i, const int& j);
@@ -90,7 +92,7 @@ public:
 	inline double dyMinusPhi(const int& i, const int& j);
 
 	inline double dxyPhi(const int& i, const int& j);
-	
+
 private:
 
 };
@@ -320,7 +322,7 @@ inline Vector2D<double> LevelSet2D::computeUnitNormal(const Vector2D<int> ipVect
 
 inline void LevelSet2D::computeMeanCurvature()
 {
-#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
 		for (int j = grid.iStart; j <= grid.jEnd; j++)
@@ -337,31 +339,110 @@ inline double LevelSet2D::computeMeanCurvature(const int & i, const int & j)
 
 inline double LevelSet2D::computeMeanCurvature(const Vector2D<int> ipVector)
 {
-	return computeMeanCurvature(ipVector.i,ipVector.j);
+	return computeMeanCurvature(ipVector.i, ipVector.j);
 }
 
 inline Vector2D<double> LevelSet2D::gradient(const int & i, const int & j)
 {
-	return Vector2D<double>(dxPhi(i,j),dyPhi(i,j));
+	return Vector2D<double>(dxPhi(i, j), dyPhi(i, j));
 }
 
 inline double LevelSet2D::interpolation(const double & x, const double & y)
 {
-	Vector2D<double> xy(x, y);
-	Vector2D<int> cell = phi.containedCell(x, y);
+	if (grid.xMin <= x && grid.xMax >= x &&grid.yMin <= y && grid.yMax >= y)
+	{
+		Vector2D<double> xy(x, y);
+		Vector2D<int> cell = phi.containedCell(x, y);
 
-	double distance00, distance10, distance01, distance11;
-	distance00 = (grid(cell) - xy).magnitude();
-	distance10 = (grid(cell.i + 1, cell.j) - xy).magnitude();
-	distance01 = (grid(cell.i, cell.j + 1) - xy).magnitude();
-	distance11 = (grid(cell.i + 1, cell.j + 1) - xy).magnitude();
+		double distance00, distance10, distance01, distance11;
+		distance00 = (grid.point(cell.i, cell.j) - xy).magnitude();
+		distance10 = (grid.point(cell.i + 1, cell.j) - xy).magnitude();
+		distance01 = (grid.point(cell.i, cell.j + 1) - xy).magnitude();
+		distance11 = (grid.point(cell.i + 1, cell.j + 1) - xy).magnitude();
+		if (distance00 < grid.dx / 2)
+		{
+			return phi(cell);
+		}
+		if (distance10 < grid.dx / 2)
+		{
+			return phi(cell.i + 1, cell.j);
+		}
+		if (distance01 < grid.dx / 2)
+		{
+			return phi(cell.i, cell.j + 1);
+		}
+		if (distance11<grid.dx / 2)
+		{
+			return phi(cell.i + 1, cell.j + 1);
+		}
 
-	return ((phi(cell)*distance00 + phi(cell.i + 1, cell.j)*distance10 + phi(cell.i, cell.j + 1)*distance01 + phi(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
+		return ((phi(cell)*distance00 + phi(cell.i + 1, cell.j)*distance10 + phi(cell.i, cell.j + 1)*distance01 + phi(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
+	}
+	else if (grid.xMin <= x && grid.xMax >= x &&grid.yMin > y)
+	{
+		double value1 = interpolation(x, grid.yMin);
+		double value2 = interpolation(x, grid.yMin + grid.dy);
+
+		return (value1 - value2)*grid.oneOverdy*(grid.yMin - y) + value1;
+	}
+	else if (grid.xMin <= x && grid.xMax >= x &&grid.yMax < y)
+	{
+		double value1 = interpolation(x, grid.yMax);
+		double value2 = interpolation(x, grid.yMax - grid.dy);
+
+		return (value1 - value2)*grid.oneOverdy*(y - grid.yMax) + value1;
+	}
+	else if (grid.xMin > x  &&grid.yMin <= y && grid.yMax >= y)
+	{
+		double value1 = interpolation(grid.xMin, y);
+		double value2 = interpolation(grid.xMin + grid.dx, y);
+
+		return (value1 - value2)*grid.oneOverdx*(grid.xMin - x) + value1;
+	}
+	else if (grid.xMax < x &&grid.yMin <= y && grid.yMax >= y)
+	{
+		double value1 = interpolation(grid.xMax, y);
+		double value2 = interpolation(grid.xMax - grid.dx, y);
+
+		return (value1 - value2)*grid.oneOverdx*(x - grid.xMax) + value1;
+	}
+	else
+	{
+		double tempX;
+		double tempY;
+		if (x < grid.xMin)
+		{
+			tempX = grid.xMin;
+		}
+		else
+		{
+			tempX = grid.xMax;
+		}
+
+		if (y < grid.yMin)
+		{
+			tempY = grid.yMin;
+		}
+		else
+		{
+			tempY = grid.yMax;
+		}
+
+		double value1 = interpolation(tempX, y);
+		double value2 = interpolation(x, tempY);
+
+		return (value1 + value2) / 2.0;
+	}
 }
 
 inline double LevelSet2D::interpolation(const Vector2D<double>& ipVector)
 {
 	return interpolation(ipVector.x, ipVector.y);
+}
+
+inline double LevelSet2D::interpolation(const int & i, const int & j)
+{
+	return interpolation(grid.point(i, j));
 }
 
 inline double LevelSet2D::dxxPhi(const int & i, const int & j)
@@ -375,11 +456,15 @@ inline double LevelSet2D::dxxPhi(const int & i, const int & j)
 	}
 	else if (i == grid.iStart)
 	{
-		return (phi(i, j) - 2 * phi(i + 1, j) + phi(i + 2, j))*grid.oneOver2dx;
+		double tempPhi = interpolation(i - 1, j);
+		return (phi(i + 1, j) - 2 * phi(i, j) + tempPhi)*grid.oneOver2dx;
+		//return (phi(i, j) - 2 * phi(i + 1, j) + phi(i + 2, j))*grid.oneOver2dx;
 	}
 	else
 	{
-		return (phi(i - 2, j) - 2 * phi(i - 1, j) + phi(i, j))*grid.oneOver2dx;
+		double tempPhi = interpolation(i + 1, j);
+		return (tempPhi - 2 * phi(i, j) + phi(i - 1, j))*grid.oneOver2dx;
+		//return (phi(i - 2, j) - 2 * phi(i - 1, j) + phi(i, j))*grid.oneOver2dx;
 	}
 }
 
@@ -394,11 +479,15 @@ inline double LevelSet2D::dxPhi(const int & i, const int & j)
 	}
 	else if (i == grid.iStart)
 	{
-		return dxPlusPhi(i, j);
+		double tempPhi = interpolation(i - 1, j);
+		return (phi(i + 1, j) - tempPhi)*grid.oneOver2dx;
+		//return dxPlusPhi(i, j);
 	}
 	else
 	{
-		return dxMinusPhi(i, j);
+		double tempPhi = interpolation(i + 1, j);
+		return (tempPhi - phi(i - 1, j))*grid.oneOver2dx;
+		//return dxMinusPhi(i, j);
 	}
 }
 
@@ -413,7 +502,9 @@ inline double LevelSet2D::dxPlusPhi(const int & i, const int & j)
 	}
 	else
 	{
-		return (phi(i, j) - phi(i - 1, j))*grid.oneOverdx;
+		double tempPhi = interpolation(i + 1, j);
+		return (tempPhi - phi(i, j))*grid.oneOverdx;
+		//return (phi(i, j) - phi(i - 1, j))*grid.oneOverdx;
 	}
 }
 
@@ -428,7 +519,9 @@ inline double LevelSet2D::dxMinusPhi(const int & i, const int & j)
 	}
 	else
 	{
-		return (phi(i + 1, j) - phi(i, j))*grid.oneOverdx;
+		double tempPhi = interpolation(i - 1, j);
+		return (phi(i, j) - tempPhi)*grid.oneOverdx;
+		//return (phi(i + 1, j) - phi(i, j))*grid.oneOverdx;
 	}
 }
 

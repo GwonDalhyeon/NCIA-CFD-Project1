@@ -67,8 +67,10 @@ public:
 
 	inline TT& operator ()(const int& i, const int& j) const
 	{
-		assert(i >= iStart && i <= iEnd);
-		assert(j >= jStart && j <= jEnd);
+		assert(i >= iStart);
+		assert(i <= iEnd);
+		assert(j >= jStart);
+		assert(j <= jEnd);
 		return dataArray(i, j);
 	}
 

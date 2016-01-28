@@ -84,22 +84,23 @@ public:
 
 	inline Vector2D<double> operator ()(const int& i, const int& j)const
 	{
-		assert(i >= iStart && i <= iEnd);
-		assert(j >= jStart && j <= jEnd);
+		//assert(i >= iStart && i <= iEnd);
+		//assert(j >= jStart && j <= jEnd);
 
 		return Vector2D<double>(xMin + double(i - iStart)*dx, yMin + double(j - jStart)*dy);
 	}
 
 	inline Vector2D<double> operator ()(const Vector2D<int> ipVector)const
 	{
-		assert(ipVector.i >= iStart && ipVector.i <= iEnd);
-		assert(ipVector.j >= jStart && ipVector.j <= jEnd);
+		//assert(ipVector.i >= iStart && ipVector.i <= iEnd);
+		//assert(ipVector.j >= jStart && ipVector.j <= jEnd);
 
 		return Vector2D<double>(xMin + double(ipVector.i - iStart)*dx, yMin + double(ipVector.j - jStart)*dy);
 	}
 
 	Vector2D<double> point(const int& i, const int& j);
 	Vector2D<double> cellCenter(const int& i, const int& j);
+	Vector2D<int> cellIndex(const double& x, const double& y);
 private:
 
 };
@@ -157,18 +158,23 @@ inline void Grid2D::initialize(const double & ipXMin, const double & ipXmax, con
 
 inline Vector2D<double> Grid2D::point(const int & i, const int & j)
 {
-	assert(i >= iStart && i <= iEnd);
-	assert(j >= jStart && j <= jEnd);
+	//assert(i >= iStart && i <= iEnd);
+	//assert(j >= jStart && j <= jEnd);
 
 	return Vector2D<double>(xMin + double(i - iStart)*dx, yMin + double(j - jStart)*dy);
 }
 
 inline Vector2D<double> Grid2D::cellCenter(const int & i, const int & j)
 {
-	assert(i >= iStart && i <= iEnd-1);
-	assert(j >= jStart && j <= jEnd-1);
+	//assert(i >= iStart && i <= iEnd-1);
+	//assert(j >= jStart && j <= jEnd-1);
 
 	return Vector2D<double>(xMin + (double(i - iStart) + 0.5)*dx, yMin + (double(j - jStart) + 0.5)*dy);
+}
+
+inline Vector2D<int> Grid2D::cellIndex(const double & x, const double & y)
+{
+	return Vector2D<int>(floor((x - xMin) + oneOverdx), floor((y - yMin) + oneOverdy));
 }
 
 inline std::ostream& operator<<(std::ostream& output, const Grid2D& grid)
