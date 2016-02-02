@@ -30,6 +30,7 @@ public:
 
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const double& dt);
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const Field2D<double>& velocity, const double& dt);
+	//static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const Field2D<Vector2D<double>>& velocity, const double& dt);
 	static void levelSetPropagatingTVDRK3(LevelSet2D& levelSet, const Field2D<double>& velocityX, const Field2D<double>& velocityY, const double& dt);
 
 	static void levelSetPropagatingEuler(LevelSet2D& levelSet, const Field2D<double>& velocity, const double& dt);
@@ -414,12 +415,14 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	Field2D<TT> wenoYMinus(levelSet.grid);
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
-	TT tempDxphi, tempDyPhi;
+	
 
 	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
 	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
 	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
 	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
+	
+	double tempDxPhi, tempDyPhi;
 #pragma omp parallel for private(tempDxPhi, tempDyPhi)
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)
 	{

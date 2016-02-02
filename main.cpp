@@ -4,6 +4,7 @@
 #include "SurfaceReconstruction.h"
 #include "LevelSetReinitializationProblem.h"
 
+#include "LevelSetAdvectionProblem.h"
 void main()
 {
 //	int omp_get_max_threads(void);
@@ -14,9 +15,12 @@ void main()
 //
 //	cout << omp_get_thread_num() << endl;
 
+	LevelSetAdvection levelSet;
+	levelSet.advectionSolver(1, true, false, false, 0.5);
 
-	SurfaceReconst<double> surface;
-	surface.surfaceReconstructionSolver(4);
+
+	//SurfaceReconst<double> surface;
+	//surface.surfaceReconstructionSolver(4);
 	
 	//Reinitialzation reinitial;
 	//reinitial. reinitializationSolver(4);
