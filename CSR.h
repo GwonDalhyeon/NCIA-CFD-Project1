@@ -1,9 +1,13 @@
 #pragma once
 
-#include "Array2D.h"
-#include "VectorND.h"
 
-using namespace std;
+
+//#ifndef CSR_H
+//#define CSR_H
+#include "CommonDef.h"
+#include "VectorND.h"
+#include "Array2D.h"
+
 template <class TT>
 class CSR
 {
@@ -11,30 +15,27 @@ public:
 	VectorND<TT> values;
 	VectorND<int> columns;
 	VectorND<int> indPrt;
-	
+
 	int colNum;
 	int rowNum;
 	int valueNum;
-	
+
 	CSR();
 	~CSR();
 
 	CSR(const Array2D<TT>& ipArray);
 
-	inline void operator = (const CSR<TT>& ipCSR)
-	{
-		values = ipCSR.values;
-		columns = ipCSR.columns;
-		indPrt = ipCSR.indPrt;
-
-		colNum = ipCSR.colNum;
-		rowNum = ipCSR.rowNum;
-		valueNum = ipCSR.valueNum;
-	}
+	inline void operator = (const CSR<TT>& ipCSR);
 
 private:
 
 };
+
+template<class TT>
+inline std::ostream& operator<<(std::ostream& output, const CSR<TT>& ipCSR);
+
+
+
 template <class TT>
 CSR<TT>::CSR()
 {
@@ -50,13 +51,13 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 {
 	rowNum = ipArray.iRes;
 	colNum = ipArray.jRes;
-	indPrt = VectorND<int>(rowNum+1);
+	indPrt = VectorND<int>(rowNum + 1);
 
 	TT* tempVal = new TT[int(floor(sqrt(double(rowNum*colNum)))) * 10];
 	int* tempCol = new int[int(floor(sqrt(double(rowNum*colNum)))) * 10];
-	
+
 #pragma omp parallel for
-	for (int i = 0; i < rowNum+1; i++)
+	for (int i = 0; i < rowNum + 1; i++)
 	{
 		indPrt[i] = -1;
 
@@ -68,7 +69,7 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 	{
 		for (int j = 0; j < colNum; j++)
 		{
-			if (ipArray(i+ipArray.iStart,j+ipArray.jStart) != 0)
+			if (ipArray(i + ipArray.iStart, j + ipArray.jStart) != 0)
 			{
 				tempVal[tempIndex] = ipArray(i + ipArray.iStart, j + ipArray.jStart);
 				tempCol[tempIndex] = j;
@@ -96,6 +97,18 @@ inline CSR<TT>::CSR(const Array2D<TT>& ipArray)
 }
 
 template<class TT>
+inline void CSR<TT>::operator=(const CSR<TT>& ipCSR)
+{
+	values = ipCSR.values;
+	columns = ipCSR.columns;
+	indPrt = ipCSR.indPrt;
+
+	colNum = ipCSR.colNum;
+	rowNum = ipCSR.rowNum;
+	valueNum = ipCSR.valueNum;
+}
+
+template<class TT>
 inline std::ostream& operator<<(std::ostream& output, const CSR<TT>& ipCSR)
 {
 	output << "CSR" << endl;
@@ -105,3 +118,6 @@ inline std::ostream& operator<<(std::ostream& output, const CSR<TT>& ipCSR)
 
 	return output;
 }
+
+//#endif // !CSR_H
+

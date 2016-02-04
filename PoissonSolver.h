@@ -1,9 +1,17 @@
 #pragma once
-#include "CSR.h"
-#include "Grid2D.h"
-#include "LevelSet2D.h"
 
+
+
+//#ifndef PoissonSolver_H
+//#define PoissonSolver_H
+#include "CommonDef.h"
+#include "VectorND.h"
+#include "Grid2D.h"
+#include "Array2D.h"
+#include "CSR.h"
+#include "LevelSet2D.h"
 #include "LinearSolver.h"
+
 
 class PoissonSolver
 {
@@ -41,6 +49,10 @@ private:
 
 };
 
+//#endif // !PoissonSolver_H
+
+
+
 PoissonSolver::PoissonSolver()
 {
 }
@@ -66,9 +78,8 @@ PoissonSolver::PoissonSolver(const Grid2D& ipGrid, const LevelSet2D& ipLevelSet,
 
 	poissonMatrix = Array2D<double>(1, innerGrid.iRes, 1, innerGrid.jRes);
 	poissonVector = VectorND<double>(poissonMatrix.ijRes);
-
-
 }
+
 
 
 inline int PoissonSolver::index(int i, int j)
@@ -635,7 +646,7 @@ inline void PoissonSolver::generatePoissonVectorJumpCondi(const Field2D<double>&
 				fT = 0;
 			}
 
-			poissonVector.values[indexInner(i, j)] = -f(i,j) - fR - fL - fB - fT;
+			poissonVector.values[indexInner(i, j)] = -f(i, j) - fR - fL - fB - fT;
 		}
 
 	}
@@ -722,7 +733,7 @@ inline void PoissonSolver::solvePoissonJumpCondi(int example, const Grid2D& ipGr
 	poissonCSR = CSR<double>(poissonMatrix);
 	innerSolution = CG<double>(poissonCSR, poissonVector);
 
-	for (int i = innerGrid.iStart; i <=innerGrid.iEnd; i++)
+	for (int i = innerGrid.iStart; i <= innerGrid.iEnd; i++)
 	{
 		for (int j = innerGrid.jStart; j < innerGrid.jEnd; j++)
 		{

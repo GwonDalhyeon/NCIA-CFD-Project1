@@ -1,6 +1,10 @@
 #pragma once
 
+
+//#ifndef EulerianFluidSolver_H
+//#define EulerianFluidSolver_H
 #include "AdvectionMethod2D.h"
+
 
 class EulerianFluidSolver2D
 {
@@ -22,6 +26,10 @@ public:
 private:
 
 };
+
+
+
+//#endif // !EulerianFluidSolver_H
 
 EulerianFluidSolver2D::EulerianFluidSolver2D()
 {

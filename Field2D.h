@@ -1,8 +1,14 @@
 #pragma once
 
+
+//#ifndef Field2D_H
+//#define Field2D_H
+#include "CommonDef.h"
+#include "Vector2D.h"
+#include "VectorND.h"
 #include "Grid2D.h"
 #include "Array2D.h"
-#include "VectorND.h"
+
 
 template<class TT>
 class Field2D
@@ -31,71 +37,20 @@ public:
 
 	void initialize(const Grid2D& ipGrid);
 	void initialize(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
-	
-	inline TT& operator [](const int& i) const
-	{
-		assert(i >= 0 && i < iRes*jRes);
-		return dataArray(i);
-	}
 
-	const int index(const Vector2D<int>& ipVector) const
-	{
-		assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);
-		assert(ipVector[1] >= jStart && ipVector[1] <= jEnd);
-		return dataArray.index(ipVector);
-	}
+	inline TT& operator [](const int& i) const;
 
-	const int index(const int& i, const int& j) const
-	{
-		assert(i >= iStart && i <= iEnd);
-		assert(j >= jStart && j <= jEnd);
-		return dataArray.index(i, j);
-	}
+	const int index(const Vector2D<int>& ipVector) const;
 
-	inline TT& operator ()(const int& i) const
-	{
-		assert(i >= iStart && i <= iEnd);
-		return dataArray(i);
-	}
+	const int index(const int& i, const int& j) const;
 
-	inline TT& operator ()(const Vector2D<int>& ipVector) const
-	{
-		assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);
-		assert(ipVector[1] >= jStart && ipVector[1] <= jEnd);
-		return dataArray(ipVector[0],ipVector[1]);
-	}
+	inline TT& operator ()(const int& i) const;
 
-	inline TT& operator ()(const int& i, const int& j) const
-	{
-		assert(i >= iStart);
-		assert(i <= iEnd);
-		assert(j >= jStart);
-		assert(j <= jEnd);
-		return dataArray(i, j);
-	}
+	inline TT& operator ()(const Vector2D<int>& ipVector) const;
 
-	inline TT operator ()(const double& x, const double& y) const
-	{
-		assert(x >= xMin && x <= xMax);
-		assert(y >= yMin && y <= yMax);
-		//TT& a=x;// = interpolation(x, y);
-		Vector2D<double> xy(x, y);
-		Vector2D<int> cell = containedCell(x, y);
-		TT value00, value10, value01, value11;
-		value00 = dataArray(cell);
-		value10 = dataArray(cell.i + 1, cell.j);
-		value01 = dataArray(cell.i, cell.j + 1);
-		value11 = dataArray(cell.i + 1, cell.j + 1);
+	inline TT& operator ()(const int& i, const int& j) const;
 
-		double distance00, distance10, distance01, distance11;
-		distance00 = (grid(cell) - xy).magnitude();
-		distance10 = (grid(cell.i + 1, cell.j) - xy).magnitude();
-		distance01 = (grid(cell.i, cell.j + 1) - xy).magnitude();
-		distance11 = (grid(cell.i + 1, cell.j + 1) - xy).magnitude();
-
-		return ((dataArray(cell)*distance00 + dataArray(cell.i + 1, cell.j)*distance10 + dataArray(cell.i, cell.j + 1)*distance01 + dataArray(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
-		//return dataArray(1,1);
-	}
+	inline TT operator ()(const double& x, const double& y) const;
 
 	//inline TT& operator ()(const Vector2D <double>& ipVector) const
 	//{
@@ -136,6 +91,12 @@ private:
 
 };
 
+
+
+//#endif // !Field2D_H
+
+
+
 template<class TT>
 Field2D<TT>::Field2D()
 {
@@ -151,7 +112,7 @@ inline Field2D<TT>::Field2D(const Grid2D & ipGrid)
 {
 	grid = ipGrid;
 	initialize(grid);
-	dataArray=Array2D<TT>(grid);
+	dataArray = Array2D<TT>(grid);
 }
 
 template<class TT>
@@ -206,6 +167,78 @@ inline void Field2D<TT>::initialize(const double & ipXMin, const double & ipXmax
 	oneOver2dy = 1.0 / twody;
 	oneOverdx2 = oneOverdx*oneOverdx;
 	oneOverdy2 = oneOverdy*oneOverdy;
+}
+
+template<class TT>
+inline TT & Field2D<TT>::operator[](const int & i) const
+{
+	assert(i >= 0 && i < iRes*jRes);
+	return dataArray(i);
+}
+
+template<class TT>
+const int Field2D<TT>::index(const Vector2D<int>& ipVector) const
+{
+	assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);
+	assert(ipVector[1] >= jStart && ipVector[1] <= jEnd);
+	return dataArray.index(ipVector);
+}
+
+template<class TT>
+const int Field2D<TT>::index(const int & i, const int & j) const
+{
+	assert(i >= iStart && i <= iEnd);
+	assert(j >= jStart && j <= jEnd);
+	return dataArray.index(i, j);
+}
+
+template<class TT>
+inline TT & Field2D<TT>::operator()(const int & i) const
+{
+	assert(i >= iStart && i <= iEnd);
+	return dataArray(i);
+}
+
+template<class TT>
+inline TT & Field2D<TT>::operator()(const Vector2D<int>& ipVector) const
+{
+	assert(ipVector[0] >= iStart && ipVector[0] <= iEnd);
+	assert(ipVector[1] >= jStart && ipVector[1] <= jEnd);
+	return dataArray(ipVector[0], ipVector[1]);
+}
+
+template<class TT>
+inline TT & Field2D<TT>::operator()(const int & i, const int & j) const
+{
+	assert(i >= iStart);
+	assert(i <= iEnd);
+	assert(j >= jStart);
+	assert(j <= jEnd);
+	return dataArray(i, j);
+}
+
+template<class TT>
+inline TT Field2D<TT>::operator()(const double & x, const double & y) const
+{
+	assert(x >= xMin && x <= xMax);
+	assert(y >= yMin && y <= yMax);
+	//TT& a=x;// = interpolation(x, y);
+	Vector2D<double> xy(x, y);
+	Vector2D<int> cell = containedCell(x, y);
+	TT value00, value10, value01, value11;
+	value00 = dataArray(cell);
+	value10 = dataArray(cell.i + 1, cell.j);
+	value01 = dataArray(cell.i, cell.j + 1);
+	value11 = dataArray(cell.i + 1, cell.j + 1);
+
+	double distance00, distance10, distance01, distance11;
+	distance00 = (grid(cell) - xy).magnitude();
+	distance10 = (grid(cell.i + 1, cell.j) - xy).magnitude();
+	distance01 = (grid(cell.i, cell.j + 1) - xy).magnitude();
+	distance11 = (grid(cell.i + 1, cell.j + 1) - xy).magnitude();
+
+	return ((dataArray(cell)*distance00 + dataArray(cell.i + 1, cell.j)*distance10 + dataArray(cell.i, cell.j + 1)*distance01 + dataArray(cell.i + 1, cell.j + 1)*distance11) / (distance00 + distance01 + distance10 + distance11));
+	//return dataArray(1,1);
 }
 
 template<class TT>

@@ -8,6 +8,10 @@
 #include "LevelSet.h"
 
 #include "LinearSolver.h"
+//#ifndef PoissonEquation_H
+//#define PoissonEquation_H
+
+
 
 class PoissonEquationSolver
 {
@@ -54,11 +58,11 @@ PoissonEquationSolver::PoissonEquationSolver()
 	{
 		poissonMatrix = new double[grid.numMatX*grid.numMatX];
 		poissonVector = new double[grid.numMatX];
-		beta		  = new double[grid.numX];
-		f			  = new double[grid.numMatX];
-		jCondition1   = new double[grid.numX];
-		jCondition2   = new double[grid.numX];
-		solution	  = new double[grid.numX];
+		beta = new double[grid.numX];
+		f = new double[grid.numMatX];
+		jCondition1 = new double[grid.numX];
+		jCondition2 = new double[grid.numX];
+		solution = new double[grid.numX];
 
 		for (int i = 0; i < grid.numMatX*grid.numMatX; i++)
 		{
@@ -67,25 +71,25 @@ PoissonEquationSolver::PoissonEquationSolver()
 		for (int i = 0; i < grid.numMatX; i++)
 		{
 			poissonVector[i] = 0;
-			f[i]			 = 0;
+			f[i] = 0;
 		}
 		for (int i = 0; i < grid.numX; i++)
 		{
-			beta[i]		   = 0;
+			beta[i] = 0;
 			jCondition1[i] = 0;
 			jCondition2[i] = 0;
-			solution[i]    = 0;
+			solution[i] = 0;
 		}
 	}
 	if (grid.dimension == 2)
 	{
 		poissonMatrix = new double[grid.numMatX*grid.numMatX*grid.numMatY*grid.numMatY];
 		poissonVector = new double[grid.numMatX*grid.numMatY];
-		beta		  = new double[grid.numX*grid.numY];
-		f			  = new double[grid.numMatX*grid.numMatY];
-		jCondition1	  = new double[grid.numX*grid.numY];
-		jCondition2   = new double[grid.numX*grid.numY];
-		solution	  = new double[grid.numX*grid.numY];
+		beta = new double[grid.numX*grid.numY];
+		f = new double[grid.numMatX*grid.numMatY];
+		jCondition1 = new double[grid.numX*grid.numY];
+		jCondition2 = new double[grid.numX*grid.numY];
+		solution = new double[grid.numX*grid.numY];
 		for (int i = 0; i < grid.numMatX*grid.numMatX*grid.numMatY*grid.numMatY; i++)
 		{
 			poissonMatrix[i] = 0;
@@ -93,14 +97,14 @@ PoissonEquationSolver::PoissonEquationSolver()
 		for (int i = 0; i < grid.numMatX*grid.numMatY; i++)
 		{
 			poissonVector[i] = 0;
-			f[i]			 = 0;
+			f[i] = 0;
 		}
 		for (int i = 0; i < grid.numX*grid.numY; i++)
 		{
-			beta[i]		   = 0;
+			beta[i] = 0;
 			jCondition1[i] = 0;
 			jCondition2[i] = 0;
-			solution[i]	   = 0;
+			solution[i] = 0;
 		}
 	}
 }
@@ -109,6 +113,8 @@ PoissonEquationSolver::~PoissonEquationSolver()
 {
 	delete[] poissonMatrix, poissonVector, beta, f, jCondition1, jCondition2, solution, tempSol;
 }
+
+
 
 PoissonEquationSolver::PoissonEquationSolver(GridInfo inputGrid)
 {
@@ -191,7 +197,7 @@ inline int PoissonEquationSolver::indexVec(int i, int j, int k)
 
 inline void PoissonEquationSolver::generateJumpCondi(int example)
 {
-	if (example==1)
+	if (example == 1)
 	{
 		///////////////////////////////////////////////////////////////////////////////
 		////
@@ -262,7 +268,7 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		jCondition2[61] = 2.4*exp(-0.36);
 	}
 
-	if (example==2)
+	if (example == 2)
 	{
 		///////////////////////////////////////////////////////////////////////////////
 		////
@@ -282,7 +288,7 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		{
 			for (int i = 0; i < grid.numX; i++)
 			{
-				levelSet.phi[index(i,j)] = sqrt((grid.x[i] - 0.5)*(grid.x[i] - 0.5) + (grid.y[j] - 0.5)*(grid.y[j] - 0.5)) - 0.25 - grid.deltaX / 2;
+				levelSet.phi[index(i, j)] = sqrt((grid.x[i] - 0.5)*(grid.x[i] - 0.5) + (grid.y[j] - 0.5)*(grid.y[j] - 0.5)) - 0.25 - grid.deltaX / 2;
 			}
 		}
 
@@ -290,13 +296,13 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		{
 			for (int i = 0; i < grid.numX; i++)
 			{
-				if (levelSet.phi[index(i,j)] <= 0)
+				if (levelSet.phi[index(i, j)] <= 0)
 				{
-					beta[index(i,j)] = 2;
+					beta[index(i, j)] = 2;
 				}
 				else
 				{
-					beta[index(i,j)] = 1;
+					beta[index(i, j)] = 1;
 				}
 			}
 		}
@@ -305,9 +311,9 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		{
 			for (int i = 0; i < grid.numMatX; i++)
 			{
-				if (levelSet.phi[index(i + 1,j + 1)] <= 0)
+				if (levelSet.phi[index(i + 1, j + 1)] <= 0)
 				{
-					f[indexVec(i,j)] = 8 * (grid.x[i + 1] * grid.x[i + 1] + grid.y[j + 1] * grid.y[j + 1] - 1)*exp(-grid.x[i + 1] * grid.x[i + 1] - grid.y[j + 1] * grid.y[j + 1]);
+					f[indexVec(i, j)] = 8 * (grid.x[i + 1] * grid.x[i + 1] + grid.y[j + 1] * grid.y[j + 1] - 1)*exp(-grid.x[i + 1] * grid.x[i + 1] - grid.y[j + 1] * grid.y[j + 1]);
 				}
 				//else
 				//{
@@ -322,22 +328,22 @@ inline void PoissonEquationSolver::generateJumpCondi(int example)
 		{
 			for (int i = 0; i < grid.numX - 1; i++)
 			{
-				centIndex  = index(i, j);
+				centIndex = index(i, j);
 				rightIndex = index(i + 1, j);
-				topIndex   = index(i, j + 1);
+				topIndex = index(i, j + 1);
 				if ((levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0) || (levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0))
 				{
-					jCondition1[centIndex]  = -exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);
+					jCondition1[centIndex] = -exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);
 					jCondition1[rightIndex] = -exp(-grid.x[i + 1] * grid.x[i + 1] - grid.y[j] * grid.y[j]);
-					jCondition2[centIndex]  = 8 * (2 * grid.x[i] * grid.x[i] + 2 * grid.y[j] * grid.y[j] - grid.x[i] - grid.y[j])*exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);
+					jCondition2[centIndex] = 8 * (2 * grid.x[i] * grid.x[i] + 2 * grid.y[j] * grid.y[j] - grid.x[i] - grid.y[j])*exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);
 					jCondition2[rightIndex] = 8 * (2 * grid.x[i + 1] * grid.x[i + 1] + 2 * grid.y[j] * grid.y[j] - grid.x[i + 1] - grid.y[j])*exp(-grid.x[i + 1] * grid.x[i + 1] - grid.y[j] * grid.y[j]);
 				}
 				if ((levelSet.phi[centIndex] <= 0 && levelSet.phi[topIndex]>0) || (levelSet.phi[centIndex]>0 && levelSet.phi[topIndex] <= 0))
 				{
-					jCondition1[centIndex]  = -exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);;
-					jCondition1[topIndex]   = -exp(-grid.x[i] * grid.x[i] - grid.y[j + 1] * grid.y[j + 1]);;
-					jCondition2[centIndex]  = 8 * (2 * grid.x[i] * grid.x[i] + 2 * grid.y[j] * grid.y[j] - grid.x[i] - grid.y[j])*exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);
-					jCondition2[topIndex]   = 8 * (2 * grid.x[i] * grid.x[i] + 2 * grid.y[j + 1] * grid.y[j + 1] - grid.x[i] - grid.y[j + 1])*exp(-grid.x[i] * grid.x[i] - grid.y[j + 1] * grid.y[j + 1]);
+					jCondition1[centIndex] = -exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);;
+					jCondition1[topIndex] = -exp(-grid.x[i] * grid.x[i] - grid.y[j + 1] * grid.y[j + 1]);;
+					jCondition2[centIndex] = 8 * (2 * grid.x[i] * grid.x[i] + 2 * grid.y[j] * grid.y[j] - grid.x[i] - grid.y[j])*exp(-grid.x[i] * grid.x[i] - grid.y[j] * grid.y[j]);
+					jCondition2[topIndex] = 8 * (2 * grid.x[i] * grid.x[i] + 2 * grid.y[j + 1] * grid.y[j + 1] - grid.x[i] - grid.y[j + 1])*exp(-grid.x[i] * grid.x[i] - grid.y[j + 1] * grid.y[j + 1]);
 				}
 			}
 		}
@@ -357,36 +363,36 @@ inline void PoissonEquationSolver::generatePoissonMatrixJumpCondi()
 				if ((levelSet.phi[i + 1]>0 && levelSet.phi[i + 1 + 1] <= 0) || (levelSet.phi[i + 1] <= 0 && levelSet.phi[i + 1 + 1]>0))
 				{
 					tempBeta = beta[i + 1] * beta[i + 1 + 1] * (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1])) / (beta[i + 1 + 1] * abs(levelSet.phi[i + 1]) + beta[i + 1] * abs(levelSet.phi[i + 1 + 1]));
-					poissonMatrix[i*grid.numMatX + i - 1]	= -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2;
-					poissonMatrix[i*grid.numMatX + i]		= 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-					poissonMatrix[i*grid.numMatX + i + 1]	= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+					poissonMatrix[i*grid.numMatX + i - 1] = -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2;
+					poissonMatrix[i*grid.numMatX + i] = 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+					poissonMatrix[i*grid.numMatX + i + 1] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
 					//cout<<i<<" "<< tempBeta<<endl;
 				}
 				else if ((levelSet.phi[i]>0 && levelSet.phi[i + 1] <= 0) || (levelSet.phi[i] <= 0 && levelSet.phi[i + 1]>0))
 				{
 					tempBeta = beta[i] * beta[i + 1] * (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1])) / (beta[i + 1] * abs(levelSet.phi[i]) + beta[i] * abs(levelSet.phi[i + 1]));
-					poissonMatrix[i*grid.numMatX + i - 1]	= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
-					poissonMatrix[i*grid.numMatX + i]		= 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-					poissonMatrix[i*grid.numMatX + i + 1]	= -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
+					poissonMatrix[i*grid.numMatX + i - 1] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+					poissonMatrix[i*grid.numMatX + i] = 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+					poissonMatrix[i*grid.numMatX + i + 1] = -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
 					//cout<<i<<" "<< tempBeta<<endl;
 				}
 				else
 				{
-					poissonMatrix[i*grid.numMatX + i - 1]	= -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2;
-					poissonMatrix[i*grid.numMatX + i]		= 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
-					poissonMatrix[i*grid.numMatX + i + 1]	= -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
+					poissonMatrix[i*grid.numMatX + i - 1] = -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2;
+					poissonMatrix[i*grid.numMatX + i] = 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
+					poissonMatrix[i*grid.numMatX + i + 1] = -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
 				}
 
 			}
 			else if (i == 0)
 			{
-				poissonMatrix[i*grid.numMatX + i]		= 1 / (grid.deltaX*grid.deltaX)*beta[i] + 1 / (grid.deltaX*grid.deltaX)*(beta[i] + beta[i + 1]) / 2;
-				poissonMatrix[i*grid.numMatX + i + 1]	= -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
+				poissonMatrix[i*grid.numMatX + i] = 1 / (grid.deltaX*grid.deltaX)*beta[i] + 1 / (grid.deltaX*grid.deltaX)*(beta[i] + beta[i + 1]) / 2;
+				poissonMatrix[i*grid.numMatX + i + 1] = -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i + 1 + 1]) / 2;
 			}
 			else
 			{
-				poissonMatrix[i*grid.numMatX + i - 1]	= -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2;
-				poissonMatrix[i*grid.numMatX + i]		= 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2 + 1 / (grid.deltaX*grid.deltaX)*beta[i + 1];
+				poissonMatrix[i*grid.numMatX + i - 1] = -1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2;
+				poissonMatrix[i*grid.numMatX + i] = 1 / (grid.deltaX*grid.deltaX)*(beta[i + 1] + beta[i]) / 2 + 1 / (grid.deltaX*grid.deltaX)*beta[i + 1];
 			}
 		}
 	}
@@ -401,26 +407,26 @@ inline void PoissonEquationSolver::generatePoissonMatrixJumpCondi()
 			//poissonMatrix[i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1) ] = 0;
 			for (int i = 0; i < grid.numMatX; i++)
 			{
-				matIndex		= i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1);
-				matLeftIndex	= i*grid.numMatX*grid.numMatY + i - 1 + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1);
-				matRightIndex   = i*grid.numMatX*grid.numMatY + i + 1 + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1);
-				matBottomIndex  = i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*grid.numMatX*grid.numMatY + (j - 1)*grid.numMatX;
-				matTopIndex		= i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*grid.numMatX*grid.numMatY + (j + 1)*grid.numMatX;
+				matIndex = i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1);
+				matLeftIndex = i*grid.numMatX*grid.numMatY + i - 1 + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1);
+				matRightIndex = i*grid.numMatX*grid.numMatY + i + 1 + j*grid.numMatX*(grid.numMatX*grid.numMatY + 1);
+				matBottomIndex = i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*grid.numMatX*grid.numMatY + (j - 1)*grid.numMatX;
+				matTopIndex = i*grid.numMatX*grid.numMatY + i + j*grid.numMatX*grid.numMatX*grid.numMatY + (j + 1)*grid.numMatX;
 
-				centIndex		= i + 1 + (j + 1)*grid.numX;
-				leftIndex		= i + (j + 1)*grid.numX;
-				rightIndex		= i + 1 + 1 + (j + 1)*grid.numX;
-				bottomIndex		= i + 1 + j*grid.numX;
-				topIndex		= i + 1 + (j + 1 + 1)*grid.numX;
+				centIndex = i + 1 + (j + 1)*grid.numX;
+				leftIndex = i + (j + 1)*grid.numX;
+				rightIndex = i + 1 + 1 + (j + 1)*grid.numX;
+				bottomIndex = i + 1 + j*grid.numX;
+				topIndex = i + 1 + (j + 1 + 1)*grid.numX;
 
 				if (j>0 && j<grid.numMatY - 1)
 				{
 					if ((levelSet.phi[centIndex]>0 && levelSet.phi[topIndex] <= 0) || (levelSet.phi[centIndex] <= 0 && levelSet.phi[topIndex]>0))
 					{
-						tempBeta						= beta[centIndex] * beta[topIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex])) / (beta[topIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[topIndex]));
-						poissonMatrix[matBottomIndex]	= -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(tempBeta);
-						poissonMatrix[matTopIndex]		= -1 / (grid.deltaY*grid.deltaY)*tempBeta;
+						tempBeta = beta[centIndex] * beta[topIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex])) / (beta[topIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[topIndex]));
+						poissonMatrix[matBottomIndex] = -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(tempBeta);
+						poissonMatrix[matTopIndex] = -1 / (grid.deltaY*grid.deltaY)*tempBeta;
 						//cout<<i<<" "<< tempBeta<<endl;
 						//cout<<i<<" " << j<<" "<<poissonMatrix[matBottomIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matTopIndex] <<endl;
 						//cout<<"";
@@ -428,19 +434,19 @@ inline void PoissonEquationSolver::generatePoissonMatrixJumpCondi()
 					}
 					else if ((levelSet.phi[bottomIndex]>0 && levelSet.phi[centIndex] <= 0) || (levelSet.phi[bottomIndex] <= 0 && levelSet.phi[centIndex]>0))
 					{
-						tempBeta						= beta[bottomIndex] * beta[centIndex] * (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[bottomIndex]) + beta[bottomIndex] * abs(levelSet.phi[centIndex]));
-						poissonMatrix[matBottomIndex]	= -1 / (grid.deltaY*grid.deltaY)*tempBeta;
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(tempBeta);
-						poissonMatrix[matTopIndex]		= -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2;
+						tempBeta = beta[bottomIndex] * beta[centIndex] * (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[bottomIndex]) + beta[bottomIndex] * abs(levelSet.phi[centIndex]));
+						poissonMatrix[matBottomIndex] = -1 / (grid.deltaY*grid.deltaY)*tempBeta;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(tempBeta);
+						poissonMatrix[matTopIndex] = -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2;
 						//cout<<i<<" "<< tempBeta<<endl;
 						//cout<<i<<" " << j<<" "<<poissonMatrix[matBottomIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matTopIndex] <<endl;
 						//cout<<"";
 					}
 					else
 					{
-						poissonMatrix[matBottomIndex]	= -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
-						poissonMatrix[matTopIndex]		= -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2;
+						poissonMatrix[matBottomIndex] = -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
+						poissonMatrix[matTopIndex] = -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2;
 
 						//cout<<i<<" " << j<<" "<<poissonMatrix[matBottomIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matTopIndex] <<endl;
 						//cout<<"";
@@ -450,147 +456,147 @@ inline void PoissonEquationSolver::generatePoissonMatrixJumpCondi()
 					{
 						if ((levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0) || (levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0))
 						{
-							tempBeta						= beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+							tempBeta = beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 						else if ((levelSet.phi[leftIndex]>0 && levelSet.phi[centIndex] <= 0) || (levelSet.phi[leftIndex] <= 0 && levelSet.phi[centIndex]>0))
 						{
-							tempBeta						= beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+							tempBeta = beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 							//cout<<i<<" "<< tempBeta<<endl;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 						else
 						{
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 					}
 					else if (i == 0)
 					{
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-						poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 						//cout<<i<<" " << j<<" "<<0<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 						//cout<<"";
 					}
 					else
 					{
-						poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
 						//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<0<<endl;
 						//cout<<"";
 					}
 				}
 				else if (j == 0)
 				{
-					poissonMatrix[matIndex]		= poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
-					poissonMatrix[matTopIndex]	= -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2;
+					poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
+					poissonMatrix[matTopIndex] = -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2;
 					//cout<<i<<" " << j<<" "<<0<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matTopIndex] <<endl;
 					//cout<<"";
 					if (i>0 && i<grid.numMatX - 1)
 					{
 						if ((levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0) || (levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0))
 						{
-							tempBeta						= beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+							tempBeta = beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
 							//cout<<i<<" "<< tempBeta<<endl;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 						else if ((levelSet.phi[leftIndex]>0 && levelSet.phi[centIndex] <= 0) || (levelSet.phi[leftIndex] <= 0 && levelSet.phi[centIndex]>0))
 						{
-							tempBeta						= beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+							tempBeta = beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 							//cout<<i<<" "<< tempBeta<<endl;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 						else
 						{
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 					}
 					else if (i == 0)
 					{
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-						poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 						//cout<<i<<" " << j<<" "<<0<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 						//cout<<"";
 					}
 					else
 					{
-						poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
 						//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<0<<endl;
 						//cout<<"";
 					}
 				}
 				else
 				{
-					poissonMatrix[matBottomIndex]	= -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
-					poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
+					poissonMatrix[matBottomIndex] = -1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
+					poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[topIndex]) / 2 + 1 / (grid.deltaY*grid.deltaY)*(beta[centIndex] + beta[bottomIndex]) / 2;
 					//cout<<i<<" " << j<<" "<<poissonMatrix[matBottomIndex]<<" "<< poissonMatrix[matIndex]<<" " <<0 <<endl;
 					//cout<<"";
 					if (i>0 && i<grid.numMatX - 1)
 					{
 						if ((levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0) || (levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0))
 						{
-							tempBeta						= beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+							tempBeta = beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
 							//cout<<i<<" "<< tempBeta<<endl;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 						else if ((levelSet.phi[leftIndex]>0 && levelSet.phi[centIndex] <= 0) || (levelSet.phi[leftIndex] <= 0 && levelSet.phi[centIndex]>0))
 						{
-							tempBeta						= beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*tempBeta;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+							tempBeta = beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*tempBeta;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(tempBeta);
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 							//cout<<i<<" "<< tempBeta<<endl;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 						else
 						{
-							poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-							poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+							poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+							poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 							//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 							//cout<<"";
 						}
 					}
 					else if (i == 0)
 					{
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-						poissonMatrix[matRightIndex]	= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matRightIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2;
 						//cout<<i<<" " << j<<" "<<0<<" "<< poissonMatrix[matIndex]<<" " <<poissonMatrix[matRightIndex] <<endl;
 						//cout<<"";
 					}
 					else
 					{
-						poissonMatrix[matLeftIndex]		= -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
-						poissonMatrix[matIndex]			= poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matLeftIndex] = -1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
+						poissonMatrix[matIndex] = poissonMatrix[matIndex] + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[rightIndex]) / 2 + 1 / (grid.deltaX*grid.deltaX)*(beta[centIndex] + beta[leftIndex]) / 2;
 						//cout<<i<<" " << j<<" "<<poissonMatrix[matLeftIndex]<<" "<< poissonMatrix[matIndex]<<" " <<0 <<endl;
 						//cout<<"";
 					}
@@ -609,23 +615,23 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 
 	if (grid.dimension == 1)
 	{
-		double* fL	= new double[grid.numMatX];
-		double* fR	= new double[grid.numMatX];
+		double* fL = new double[grid.numMatX];
+		double* fR = new double[grid.numMatX];
 
 		double normalLeft, normalCenter, normalRight;
 
 		for (int i = 0; i < grid.numMatX; i++)
 		{
-			normalLeft		= levelSet.unitNormal(i);
-			normalCenter	= levelSet.unitNormal(i + 1);
-			normalRight		= levelSet.unitNormal(i + 1 + 1);
+			normalLeft = levelSet.unitNormal(i);
+			normalCenter = levelSet.unitNormal(i + 1);
+			normalRight = levelSet.unitNormal(i + 1 + 1);
 			if (levelSet.phi[i]>0 && levelSet.phi[i + 1] <= 0)
 			{
-				theta		= abs(levelSet.phi[i]) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
-				aGamma		= (jCondition1[i] * abs(levelSet.phi[i + 1]) + jCondition1[i + 1] * abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
-				bGamma		= (jCondition2[i] * normalLeft*abs(levelSet.phi[i + 1]) + jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
-				tempBeta	= beta[i] * beta[i + 1] * (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1])) / (beta[i + 1] * abs(levelSet.phi[i]) + beta[i] * abs(levelSet.phi[i + 1]));
-				fL[i]		= tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[i] * grid.deltaX);
+				theta = abs(levelSet.phi[i]) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
+				aGamma = (jCondition1[i] * abs(levelSet.phi[i + 1]) + jCondition1[i + 1] * abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
+				bGamma = (jCondition2[i] * normalLeft*abs(levelSet.phi[i + 1]) + jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
+				tempBeta = beta[i] * beta[i + 1] * (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1])) / (beta[i + 1] * abs(levelSet.phi[i]) + beta[i] * abs(levelSet.phi[i + 1]));
+				fL[i] = tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[i] * grid.deltaX);
 				//cout<<levelSet.phi[i]<<" "<<levelSet.phi[i+1]<<endl;
 				//cout<<i<<" " <<i+1 <<endl;
 				//cout << i<< " "<< fL[i]<<endl;
@@ -637,11 +643,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 			}
 			else if (levelSet.phi[i] <= 0 && levelSet.phi[i + 1]>0)
 			{
-				theta		= abs(levelSet.phi[i]) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
-				aGamma		= (jCondition1[i] * abs(levelSet.phi[i + 1]) + jCondition1[i + 1] * abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
-				bGamma		= (jCondition2[i] * normalLeft*abs(levelSet.phi[i + 1]) + jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
-				tempBeta	= beta[i] * beta[i + 1] * (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1])) / (beta[i + 1] * abs(levelSet.phi[i]) + beta[i] * abs(levelSet.phi[i + 1]));
-				fL[i]		= -tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[i] * grid.deltaX);
+				theta = abs(levelSet.phi[i]) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
+				aGamma = (jCondition1[i] * abs(levelSet.phi[i + 1]) + jCondition1[i + 1] * abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
+				bGamma = (jCondition2[i] * normalLeft*abs(levelSet.phi[i + 1]) + jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1]));
+				tempBeta = beta[i] * beta[i + 1] * (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1])) / (beta[i + 1] * abs(levelSet.phi[i]) + beta[i] * abs(levelSet.phi[i + 1]));
+				fL[i] = -tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[i] * grid.deltaX);
 				//cout<<levelSet.phi[i]<<" "<<levelSet.phi[i+1]<<endl;
 				//cout<<i<<" " <<i+1 <<endl;
 				//cout << i<< " "<< fL[i]<<endl;
@@ -658,11 +664,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 
 			if (levelSet.phi[i + 1] <= 0 && levelSet.phi[i + 1 + 1]>0)
 			{
-				theta		= abs(levelSet.phi[i + 1 + 1]) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				aGamma		= (jCondition1[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition1[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				bGamma		= (jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i + 1 + 1]) + jCondition2[i + 1 + 1] * normalRight*abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				tempBeta	= beta[i + 1] * beta[i + 1 + 1] * (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1])) / (beta[i + 1 + 1] * abs(levelSet.phi[i + 1]) + beta[i + 1] * abs(levelSet.phi[i + 1 + 1]));
-				fR[i]		= tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[i + 1 + 1] * grid.deltaX);
+				theta = abs(levelSet.phi[i + 1 + 1]) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				aGamma = (jCondition1[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition1[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				bGamma = (jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i + 1 + 1]) + jCondition2[i + 1 + 1] * normalRight*abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				tempBeta = beta[i + 1] * beta[i + 1 + 1] * (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1])) / (beta[i + 1 + 1] * abs(levelSet.phi[i + 1]) + beta[i + 1] * abs(levelSet.phi[i + 1 + 1]));
+				fR[i] = tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[i + 1 + 1] * grid.deltaX);
 				//cout<<levelSet.phi[i+1]<<" "<<levelSet.phi[i+1+1]<<endl;
 				//cout<<i+1<<" " <<i+1+1 <<endl;
 				//cout << i<< " "<< fR[i]<<endl;
@@ -675,11 +681,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 			}
 			else if (levelSet.phi[i + 1]>0 && levelSet.phi[i + 1 + 1] <= 0)
 			{
-				theta		= abs(levelSet.phi[i + 1 + 1]) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				aGamma		= (jCondition1[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition1[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				bGamma		= (jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i + 1 + 1]) + jCondition2[i + 1 + 1] * normalRight*abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				tempBeta	= beta[i + 1] * beta[i + 1 + 1] * (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1])) / (beta[i + 1 + 1] * abs(levelSet.phi[i + 1]) + beta[i + 1] * abs(levelSet.phi[i + 1 + 1]));
-				fR[i]		= -tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[i + 1 + 1] * grid.deltaX);
+				theta = abs(levelSet.phi[i + 1 + 1]) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				aGamma = (jCondition1[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition1[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				bGamma = (jCondition2[i + 1] * normalCenter*abs(levelSet.phi[i + 1 + 1]) + jCondition2[i + 1 + 1] * normalRight*abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				tempBeta = beta[i + 1] * beta[i + 1 + 1] * (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1])) / (beta[i + 1 + 1] * abs(levelSet.phi[i + 1]) + beta[i + 1] * abs(levelSet.phi[i + 1 + 1]));
+				fR[i] = -tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[i + 1 + 1] * grid.deltaX);
 				//cout<<levelSet.phi[i+1]<<" "<<levelSet.phi[i+1+1]<<endl;
 				//cout<<i+1<<" " <<i+1+1 <<endl;
 				//cout << i<< " "<< fR[i]<<endl;
@@ -702,16 +708,16 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 	}
 	else if (grid.dimension == 2)
 	{
-		double* fL	= new double[grid.numMatX*grid.numMatY];
-		double* fR	= new double[grid.numMatX*grid.numMatY];
-		double* fB	= new double[grid.numMatX*grid.numMatY];
-		double* fT	= new double[grid.numMatX*grid.numMatY];
+		double* fL = new double[grid.numMatX*grid.numMatY];
+		double* fR = new double[grid.numMatX*grid.numMatY];
+		double* fB = new double[grid.numMatX*grid.numMatY];
+		double* fT = new double[grid.numMatX*grid.numMatY];
 
-		double* normalLeft		= new double[2];
-		double* normalRight		= new double[2];
-		double* normalCenter	= new double[2];
-		double* normalBottom	= new double[2];
-		double* normalTop		= new double[2];
+		double* normalLeft = new double[2];
+		double* normalRight = new double[2];
+		double* normalCenter = new double[2];
+		double* normalBottom = new double[2];
+		double* normalTop = new double[2];
 
 		int matIndex;
 		int centIndex, leftIndex, rightIndex, topIndex, bottomIndex;
@@ -722,25 +728,25 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 			{
 				matIndex = indexVec(i, j);// i + j*grid.numMatX;
 
-				centIndex	= index(i + 1, j + 1);		// i + 1 + (j + 1)*grid.numX;
-				leftIndex	= index(i, j + 1);			// i + (j + 1)*grid.numX;
-				rightIndex  = index(i + 1 + 1, j + 1);	// i + 1 + 1 + (j + 1)*grid.numX;
+				centIndex = index(i + 1, j + 1);		// i + 1 + (j + 1)*grid.numX;
+				leftIndex = index(i, j + 1);			// i + (j + 1)*grid.numX;
+				rightIndex = index(i + 1 + 1, j + 1);	// i + 1 + 1 + (j + 1)*grid.numX;
 				bottomIndex = index(i + 1, j);			// i + 1 + j*grid.numX;
-				topIndex	= index(i + 1, j + 1 + 1);	// i + 1 + (j + 1 + 1)*grid.numX;
+				topIndex = index(i + 1, j + 1 + 1);	// i + 1 + (j + 1 + 1)*grid.numX;
 
 				levelSet.unitNormal(i - 1, j, normalLeft);
 				levelSet.unitNormal(i + 1, j, normalRight);
 				levelSet.unitNormal(i, j, normalCenter);
 				levelSet.unitNormal(i, j - 1, normalBottom);
 				levelSet.unitNormal(i, j + 1, normalTop);
-				
+
 				if (levelSet.phi[leftIndex]>0 && levelSet.phi[centIndex] <= 0)
 				{
-					theta			= abs(levelSet.phi[leftIndex]) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
-					aGamma			= (jCondition1[leftIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
-					bGamma			= (jCondition2[leftIndex] * normalLeft[0] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
-					tempBeta		= beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
-					fL[matIndex]	= tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[leftIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[leftIndex]) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
+					aGamma = (jCondition1[leftIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
+					bGamma = (jCondition2[leftIndex] * normalLeft[0] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
+					tempBeta = beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
+					fL[matIndex] = tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[leftIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i]<<" "<<levelSet.phi[i+1]<<endl;
 					//cout<<i<<" " <<i+1 <<endl;
 					//cout << i<< " "<< fL[i]<<endl;
@@ -752,11 +758,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 				}
 				else if (levelSet.phi[leftIndex] <= 0 && levelSet.phi[centIndex]>0)
 				{
-					theta			= abs(levelSet.phi[leftIndex]) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
-					aGamma			= (jCondition1[leftIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
-					bGamma			= (jCondition2[leftIndex] * normalLeft[0] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
-					tempBeta		= beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
-					fL[matIndex]	= -tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[leftIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[leftIndex]) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
+					aGamma = (jCondition1[leftIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
+					bGamma = (jCondition2[leftIndex] * normalLeft[0] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[leftIndex])) / (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex]));
+					tempBeta = beta[leftIndex] * beta[centIndex] * (abs(levelSet.phi[leftIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[leftIndex]) + beta[leftIndex] * abs(levelSet.phi[centIndex]));
+					fL[matIndex] = -tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[leftIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i]<<" "<<levelSet.phi[i+1]<<endl;
 					//cout<<i<<" " <<i+1 <<endl;
 					//cout << i<< " "<< fL[i]<<endl;
@@ -773,11 +779,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 
 				if (levelSet.phi[centIndex] <= 0 && levelSet.phi[rightIndex]>0)
 				{
-					theta			= abs(levelSet.phi[rightIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
-					aGamma			= (jCondition1[centIndex] * abs(levelSet.phi[rightIndex]) + jCondition1[rightIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
-					bGamma			= (jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[rightIndex]) + jCondition2[rightIndex] * normalRight[0] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
-					tempBeta		= beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
-					fR[matIndex]	= tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[rightIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[rightIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
+					aGamma = (jCondition1[centIndex] * abs(levelSet.phi[rightIndex]) + jCondition1[rightIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
+					bGamma = (jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[rightIndex]) + jCondition2[rightIndex] * normalRight[0] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
+					tempBeta = beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
+					fR[matIndex] = tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[rightIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i+1]<<" "<<levelSet.phi[i+1+1]<<endl;
 					//cout<<i+1<<" " <<i+1+1 <<endl;
 					//cout << i<< " "<< fR[i]<<endl;
@@ -790,11 +796,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 				}
 				else if (levelSet.phi[centIndex]>0 && levelSet.phi[rightIndex] <= 0)
 				{
-					theta			= abs(levelSet.phi[rightIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
-					aGamma			= (jCondition1[centIndex] * abs(levelSet.phi[rightIndex]) + jCondition1[rightIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
-					bGamma			= (jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[rightIndex]) + jCondition2[rightIndex] * normalRight[0] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
-					tempBeta		= beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
-					fR[matIndex]	= -tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[rightIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[rightIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
+					aGamma = (jCondition1[centIndex] * abs(levelSet.phi[rightIndex]) + jCondition1[rightIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
+					bGamma = (jCondition2[centIndex] * normalCenter[0] * abs(levelSet.phi[rightIndex]) + jCondition2[rightIndex] * normalRight[0] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex]));
+					tempBeta = beta[centIndex] * beta[rightIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[rightIndex])) / (beta[rightIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[rightIndex]));
+					fR[matIndex] = -tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[rightIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i+1]<<" "<<levelSet.phi[i+1+1]<<endl;
 					//cout<<i+1<<" " <<i+1+1 <<endl;
 					//cout << i<< " "<< fR[i]<<endl;
@@ -811,11 +817,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 
 				if (levelSet.phi[bottomIndex]>0 && levelSet.phi[centIndex] <= 0)
 				{
-					theta			= abs(levelSet.phi[bottomIndex]) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
-					aGamma			= (jCondition1[bottomIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
-					bGamma			= (jCondition2[bottomIndex] * normalBottom[1] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
-					tempBeta		= beta[bottomIndex] * beta[centIndex] * (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[bottomIndex]) + beta[bottomIndex] * abs(levelSet.phi[centIndex]));
-					fB[matIndex]	= tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[bottomIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[bottomIndex]) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
+					aGamma = (jCondition1[bottomIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
+					bGamma = (jCondition2[bottomIndex] * normalBottom[1] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
+					tempBeta = beta[bottomIndex] * beta[centIndex] * (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[bottomIndex]) + beta[bottomIndex] * abs(levelSet.phi[centIndex]));
+					fB[matIndex] = tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[bottomIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i]<<" "<<levelSet.phi[i+1]<<endl;
 					//cout<<i<<" " <<i+1 <<endl;
 					//cout << i<< " "<< fL[i]<<endl;
@@ -827,11 +833,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 				}
 				else if (levelSet.phi[bottomIndex] <= 0 && levelSet.phi[centIndex]>0)
 				{
-					theta			= abs(levelSet.phi[bottomIndex]) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
-					aGamma			= (jCondition1[bottomIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
-					bGamma			= (jCondition2[bottomIndex] * normalBottom[1] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
-					tempBeta		= beta[bottomIndex] * beta[centIndex] * (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[bottomIndex]) + beta[bottomIndex] * abs(levelSet.phi[centIndex]));
-					fB[matIndex]	= -tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[bottomIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[bottomIndex]) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
+					aGamma = (jCondition1[bottomIndex] * abs(levelSet.phi[centIndex]) + jCondition1[centIndex] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
+					bGamma = (jCondition2[bottomIndex] * normalBottom[1] * abs(levelSet.phi[centIndex]) + jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[bottomIndex])) / (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex]));
+					tempBeta = beta[bottomIndex] * beta[centIndex] * (abs(levelSet.phi[bottomIndex]) + abs(levelSet.phi[centIndex])) / (beta[centIndex] * abs(levelSet.phi[bottomIndex]) + beta[bottomIndex] * abs(levelSet.phi[centIndex]));
+					fB[matIndex] = -tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[bottomIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i]<<" "<<levelSet.phi[i+1]<<endl;
 					//cout<<i+1<<" " <<j+1 <<endl;
 					//cout <<fB[matIndex]<<endl;
@@ -848,11 +854,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 
 				if (levelSet.phi[centIndex] <= 0 && levelSet.phi[topIndex]>0)
 				{
-					theta			= abs(levelSet.phi[topIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
-					aGamma			= (jCondition1[centIndex] * abs(levelSet.phi[topIndex]) + jCondition1[topIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
-					bGamma			= (jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[topIndex]) + jCondition2[topIndex] * normalTop[1] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
-					tempBeta		= beta[centIndex] * beta[topIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex])) / (beta[topIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[topIndex]));
-					fT[matIndex]	= tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[topIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[topIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
+					aGamma = (jCondition1[centIndex] * abs(levelSet.phi[topIndex]) + jCondition1[topIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
+					bGamma = (jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[topIndex]) + jCondition2[topIndex] * normalTop[1] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
+					tempBeta = beta[centIndex] * beta[topIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex])) / (beta[topIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[topIndex]));
+					fT[matIndex] = tempBeta*aGamma / (grid.deltaX*grid.deltaX) + tempBeta*bGamma*theta / (beta[topIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i+1]<<" "<<levelSet.phi[i+1+1]<<endl;
 					//cout<<i+1<<" " <<j+1 <<endl;
 					//cout << fT[matIndex]<<endl;
@@ -865,11 +871,11 @@ inline void PoissonEquationSolver::generatePoissonVectorJumpCondi()
 				}
 				else if (levelSet.phi[centIndex]>0 && levelSet.phi[topIndex] <= 0)
 				{
-					theta			= abs(levelSet.phi[topIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
-					aGamma			= (jCondition1[centIndex] * abs(levelSet.phi[topIndex]) + jCondition1[topIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
-					bGamma			= (jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[topIndex]) + jCondition2[topIndex] * normalTop[1] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
-					tempBeta		= beta[centIndex] * beta[topIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex])) / (beta[topIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[topIndex]));
-					fT[matIndex]	= -tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[topIndex] * grid.deltaX);
+					theta = abs(levelSet.phi[topIndex]) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
+					aGamma = (jCondition1[centIndex] * abs(levelSet.phi[topIndex]) + jCondition1[topIndex] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
+					bGamma = (jCondition2[centIndex] * normalCenter[1] * abs(levelSet.phi[topIndex]) + jCondition2[topIndex] * normalTop[1] * abs(levelSet.phi[centIndex])) / (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex]));
+					tempBeta = beta[centIndex] * beta[topIndex] * (abs(levelSet.phi[centIndex]) + abs(levelSet.phi[topIndex])) / (beta[topIndex] * abs(levelSet.phi[centIndex]) + beta[centIndex] * abs(levelSet.phi[topIndex]));
+					fT[matIndex] = -tempBeta*aGamma / (grid.deltaX*grid.deltaX) - tempBeta*bGamma*theta / (beta[topIndex] * grid.deltaX);
 					//cout<<levelSet.phi[i+1]<<" "<<levelSet.phi[i+1+1]<<endl;
 					//cout<<i+1<<" " <<j+1 <<endl;
 					//cout <<fT[matIndex]<<endl;
@@ -959,7 +965,7 @@ inline void PoissonEquationSolver::solvePoissonEquationJumpCondi(int example)
 
 
 
-	if (grid.dimension==1)
+	if (grid.dimension == 1)
 	{
 		tempSol = CG(grid.numMatX, poissonMatrix, poissonVector);
 
@@ -970,7 +976,7 @@ inline void PoissonEquationSolver::solvePoissonEquationJumpCondi(int example)
 			//cout<<i<<" "<<sol[i]<<endl;
 		}
 	}
-	else if (grid.dimension==2)
+	else if (grid.dimension == 2)
 	{
 		sparsePoissonMatrix = csr(grid.numMatX*grid.numMatY, grid.numMatX*grid.numMatY, poissonMatrix);
 		tempSol = CG(sparsePoissonMatrix, poissonVector);
@@ -983,8 +989,8 @@ inline void PoissonEquationSolver::solvePoissonEquationJumpCondi(int example)
 			}
 		}
 	}
-	
-	
+
+
 	outputResult();
 
 }
@@ -997,14 +1003,14 @@ inline void PoissonEquationSolver::outputResult()
 
 	ofstream solutionFile;
 	solutionFile.open("D:\\Data/poisson.txt", ios::binary);
-	if (grid.dimension==1)
+	if (grid.dimension == 1)
 	{
 		for (int i = 0; i < grid.numX; i++)
 		{
 			solutionFile << i << " " << grid.x[i] << " " << solution[i] << endl;
 		}
 	}
-	if (grid.dimension==2)
+	if (grid.dimension == 2)
 	{
 		for (int i = 0; i < grid.numX; i++)
 		{
@@ -1014,10 +1020,15 @@ inline void PoissonEquationSolver::outputResult()
 			}
 		}
 	}
-	
+
 	solutionFile.close();
 
 	//result = (double)(clock() - before) / CLOCKS_PER_SEC;
 	//cout << "binary : " << result << "\n";
 	////printf("걸린시간은 %5.2f 입니다.\n", result);
 }
+
+
+
+//#endif // !PoissonEquation
+

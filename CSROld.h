@@ -5,7 +5,9 @@
 #include <fstream>
 //#include <math.h>
 
-using namespace std;
+//#ifndef CSROld_H
+//#define CSROld_H
+
 
 class csr
 {
@@ -16,7 +18,7 @@ public:
 	int colNum;
 	int rowNum;
 
-	csr(int num1,int num2, double* matrix);
+	csr(int num1, int num2, double* matrix);
 
 	csr();
 	~csr();
@@ -41,7 +43,7 @@ public:
 
 		indptr = new int[rowNum + 1];
 
-		for (int i = 0; i < rowNum+1; i++)
+		for (int i = 0; i < rowNum + 1; i++)
 		{
 			indptr[i] = inputCsr.indptr[i];
 		}
@@ -65,15 +67,15 @@ csr::csr()
 {
 
 }
-csr::csr(int num1,int num2, double* matrix)
+csr::csr(int num1, int num2, double* matrix)
 {
 	rowNum = num1;
 	colNum = num2;
-	double* tempVal = new double[int(floor(sqrt(double(rowNum*colNum))))*10];
-	double* tempCol = new double[int(floor(sqrt(double(rowNum*colNum))))*10];
-	indptr = new int[rowNum+1];
+	double* tempVal = new double[int(floor(sqrt(double(rowNum*colNum)))) * 10];
+	double* tempCol = new double[int(floor(sqrt(double(rowNum*colNum)))) * 10];
+	indptr = new int[rowNum + 1];
 
-	for (int i = 0; i < rowNum+1; i++)
+	for (int i = 0; i < rowNum + 1; i++)
 	{
 		indptr[i] = -1;
 
@@ -115,3 +117,7 @@ csr::~csr()
 {
 	delete[] val, col, indptr;
 }
+
+
+//#endif // !CSROld_H
+

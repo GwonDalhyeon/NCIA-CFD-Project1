@@ -1,9 +1,14 @@
 #pragma once
 
-#include "AdvectionMethod2D.h"
-#include "PoissonSolver.h"
 
 //double AdvectionMethod2D<double>::alpha;
+//#ifndef LevelSetAdvectionProblem_H
+//#define LevelSetAdvectionProblem_H
+#include "CommonDef.h"
+#include "Grid2D.h"
+#include "Field2D.h"
+#include "LevelSet2D.h"
+#include "AdvectionMethod2D.h"
 
 class LevelSetAdvection
 {
@@ -92,9 +97,15 @@ public:
 
 	void outputResult(const int& iter);
 
+
 private:
 
 };
+
+//#endif // !LevelSetAdvectionProblem_H
+
+
+
 
 LevelSetAdvection::LevelSetAdvection()
 {
@@ -205,7 +216,7 @@ inline void LevelSetAdvection::advectionSolver(const int & example, const bool &
 			else
 			{
 				dt = adaptiveTimeStep();
-				AdvectionMethod2D<double>::levelSetPropagatingTVDRK3(levelSet, 5dt);
+				AdvectionMethod2D<double>::levelSetPropagatingTVDRK3(levelSet, dt);
 			}
 
 
@@ -263,7 +274,7 @@ inline void LevelSetAdvection::propaInitialCondition(const int & example)
 
 		isVelocity = true;
 
-		dt = grid.dx*grid.dy;
+		//dt = grid.dx*grid.dy;
 		propaMaxIteration = 10000;
 		propaWriteIter = 100;
 	}
@@ -286,7 +297,7 @@ inline void LevelSetAdvection::propaInitialCondition(const int & example)
 
 		isVelocity = false;
 
-		dt = grid.dx*grid.dy;
+		//dt = grid.dx*grid.dy;
 		propaMaxIteration = 1000;
 		propaWriteIter = 10;
 	}
@@ -320,7 +331,7 @@ inline void LevelSetAdvection::propaInitialCondition(const int & example)
 
 		isVelocity = false;
 
-		dt = grid.dx*grid.dy;
+		//dt = grid.dx*grid.dy;
 		propaMaxIteration = 1000;
 		propaWriteIter = 10;
 	}
@@ -330,7 +341,7 @@ inline void LevelSetAdvection::reinitializationInitialCondition(const int & exam
 {
 	grid = Grid2D(-2, 2, 101, -2, 2, 101);
 
-	dt = grid.dx*grid.dy;
+	//dt = grid.dx*grid.dy;
 	reinitialMaxIteration = 1000;
 	reinitialWriteIter = 10;
 
@@ -456,7 +467,7 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		distance.dataArray = 100;
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPoint = VectorND<Vector2D<double>>(18);
-		dt = grid.dx*grid.dy / 2.0;
+		//dt = grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 500;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
@@ -504,7 +515,7 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPointNum = 100;
 		givenPoint = VectorND<Vector2D<double>>(givenPointNum);
-		dt = 5 * grid.dx*grid.dy / 2.0;
+		//dt = 5 * grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 500;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
@@ -567,7 +578,7 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPointNum = 100;
 		givenPoint = VectorND<Vector2D<double>>(givenPointNum);
-		dt = 5 * grid.dx*grid.dy / 2.0;
+		//dt = 5 * grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 500;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
@@ -620,7 +631,7 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPointNum = 100;
 		givenPoint = VectorND<Vector2D<double>>(givenPointNum);
-		dt = 5 * grid.dx*grid.dy / 2.0;
+		//dt = 5 * grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 5000;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
@@ -965,6 +976,8 @@ inline double LevelSetAdvection::adaptiveTimeStep(const Field2D<double>& velocit
 
 inline void LevelSetAdvection::outputResult(const int & iter)
 {
+	cout << "Write results" << endl;
+
 	ofstream solutionFile1;
 	solutionFile1.open("D:\\Data/phi" + to_string(iter) + ".txt", ios::binary);
 	for (int i = grid.iStart; i <= grid.iEnd; i++)

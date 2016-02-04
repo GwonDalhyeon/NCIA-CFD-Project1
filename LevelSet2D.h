@@ -1,5 +1,15 @@
 #pragma once
+
+
+//#ifndef LevelSet2D_H
+//#define LevelSet2D_H
+#include "CommonDef.h"
+#include "Vector2D.h"
+#include "VectorND.h"
+#include "Grid2D.h"
 #include "Field2D.h"
+
+
 
 class LevelSet2D
 {
@@ -18,48 +28,17 @@ public:
 
 	LevelSet2D(const Grid2D& ipGrid);
 
-	const int index(const int& i, const int& j) const
-	{
-		assert(i >= phi.iStart && i <= phi.iEnd);
-		assert(j >= phi.jStart && j <= phi.jEnd);
-		return phi.index(i, j);
-	}
+	const int index(const int& i, const int& j) const;
 
-	const int index(const Vector2D<int>& ipVector) const
-	{
-		assert(ipVector[0] >= phi.iStart && ipVector[0] <= phi.iEnd);
-		assert(ipVector[1] >= phi.jStart && ipVector[1] <= phi.jEnd);
-		return phi.index(ipVector);
-	}
+	const int index(const Vector2D<int>& ipVector) const;
 
-	inline double& operator ()(const int& i, const int& j) const
-	{
-		assert(i >= phi.iStart && i <= phi.iEnd);
-		assert(j >= phi.jStart && j <= phi.jEnd);
-		return phi(i, j);
-	}
+	inline double& operator ()(const int& i, const int& j) const;
 
-	inline double& operator ()(const Vector2D<int>& ipVector) const
-	{
-		assert(ipVector[0] >= phi.iStart && ipVector[0] <= phi.iEnd);
-		assert(ipVector[1] >= phi.jStart && ipVector[1] <= phi.jEnd);
-		return phi(ipVector);
-	}
+	inline double& operator ()(const Vector2D<int>& ipVector) const;
 
-	inline double operator ()(const double& x, const double& y) const
-	{
-		assert(x >= grid.xMin && x <= grid.xMax);
-		assert(y >= grid.yMin && y <= grid.yMax);
+	inline double operator ()(const double& x, const double& y) const;
 
-		return phi(x, y);
-	}
-
-	inline double operator ()(const Vector2D<double>& ipVector) const
-	{
-		assert(ipVector[0] >= grid.xMin && ipVector[0] <= grid.xMax);
-		assert(ipVector[1] >= grid.yMin && ipVector[1] <= grid.yMax);
-		return phi(ipVector.x, ipVector.y);
-	}
+	inline double operator ()(const Vector2D<double>& ipVector) const;
 
 	inline void computeNormal();
 	inline Vector2D<double> computeNormal(const int& i, const int& j);
@@ -97,6 +76,11 @@ private:
 
 };
 
+
+//#endif // !LevelSet2D
+
+
+
 LevelSet2D::LevelSet2D()
 {
 }
@@ -104,6 +88,7 @@ LevelSet2D::LevelSet2D()
 LevelSet2D::~LevelSet2D()
 {
 }
+
 
 inline LevelSet2D::LevelSet2D(const Grid2D & ipGrid)
 {
@@ -115,6 +100,51 @@ inline LevelSet2D::LevelSet2D(const Grid2D & ipGrid)
 	meanCurvature = Field2D<double>(ipGrid);
 }
 
+const int LevelSet2D::index(const int & i, const int & j) const
+{
+	assert(i >= phi.iStart && i <= phi.iEnd);
+	assert(j >= phi.jStart && j <= phi.jEnd);
+	return phi.index(i, j);
+}
+
+const int LevelSet2D::index(const Vector2D<int>& ipVector) const
+{
+	assert(ipVector[0] >= phi.iStart && ipVector[0] <= phi.iEnd);
+	assert(ipVector[1] >= phi.jStart && ipVector[1] <= phi.jEnd);
+	return phi.index(ipVector);
+}
+
+inline double & LevelSet2D::operator()(const int & i, const int & j) const
+{
+	assert(i >= phi.iStart && i <= phi.iEnd);
+	assert(j >= phi.jStart && j <= phi.jEnd);
+	return phi(i, j);
+}
+
+
+inline double & LevelSet2D::operator()(const Vector2D<int>& ipVector) const
+{
+	assert(ipVector[0] >= phi.iStart && ipVector[0] <= phi.iEnd);
+	assert(ipVector[1] >= phi.jStart && ipVector[1] <= phi.jEnd);
+	return phi(ipVector);
+}
+
+
+
+inline double LevelSet2D::operator()(const double & x, const double & y) const
+{
+	assert(x >= grid.xMin && x <= grid.xMax);
+	assert(y >= grid.yMin && y <= grid.yMax);
+
+	return phi(x, y);
+}
+
+inline double LevelSet2D::operator()(const Vector2D<double>& ipVector) const
+{
+	assert(ipVector[0] >= grid.xMin && ipVector[0] <= grid.xMax);
+	assert(ipVector[1] >= grid.yMin && ipVector[1] <= grid.yMax);
+	return phi(ipVector.x, ipVector.y);
+}
 
 inline void LevelSet2D::computeNormal()
 {
@@ -322,7 +352,7 @@ inline Vector2D<double> LevelSet2D::computeUnitNormal(const Vector2D<int> ipVect
 
 inline void LevelSet2D::computeMeanCurvature()
 {
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
 		for (int j = grid.iStart; j <= grid.jEnd; j++)

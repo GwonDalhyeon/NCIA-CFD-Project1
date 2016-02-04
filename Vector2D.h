@@ -1,4 +1,8 @@
 #pragma once
+
+
+//#ifndef Vector2D_H
+//#define Vector2D_H
 #include "CommonDef.h"
 
 
@@ -19,119 +23,45 @@ public:
 	Vector2D(const Vector2D<TT>& inputVector);
 	Vector2D(const TT inputValues[2]);
 
-	inline TT operator [](const int& i) const
-	{
-		assert(i == 0 || i == 1);
-		return values[i];
-	}
+	inline TT operator [](const int& i) const;
+
+	inline TT operator ()(const int& i) const;
+
+	inline void operator = (const TT& constant);
+
+	inline void operator = (const Vector2D<TT>& inputVector);
+
+	inline void operator += (const Vector2D<TT>& inputVector);
+
+	inline void operator -= (const Vector2D<TT>& inputVector);
+
+	inline void operator /= (const Vector2D<TT>& inputVector);
+
+	inline void operator *= (const Vector2D<TT>& inputVector);
+
+	inline void operator += (const TT& value);
+
+	inline void operator -= (const TT& value);
+
+	inline void operator *= (const TT& value);
+
+	inline void operator /= (const TT& value);
+
+	Vector2D<TT> operator + (const Vector2D<TT>& inputVector);
+
+	Vector2D<TT> operator - (const Vector2D<TT>& inputVector);
+
+	Vector2D<TT> operator * (const Vector2D<TT>& inputVector);
 	
-	inline TT operator ()(const int& i) const
-	{
-		assert(i == 0 || i == 1);
-		return values[i];
-	}
+	Vector2D<TT> operator / (const Vector2D<TT>& inputVector);
 
-	inline void operator = (const TT& constant)
-	{
-		x = constant;
-		y = constant;
-	}
+	Vector2D<TT> operator + (const TT& value);
 
-	inline void operator = (const Vector2D<TT>& inputVector)
-	{
-		x = inputVector.x;
-		y = inputVector.y;
-	}
+	Vector2D<TT> operator - (const TT& value);
 
-	inline void operator += (const Vector2D<TT>& inputVector)
-	{
-		x += inputVector.x;
-		y += inputVector.y;
-	}
+	Vector2D<TT> operator * (const TT& value);
 
-	inline void operator -= (const Vector2D<TT>& inputVector)
-	{
-		x -= inputVector.x;
-		y -= inputVector.y;
-	}
-
-	inline void operator /= (const Vector2D<TT>& inputVector)
-	{
-		x /= inputVector.x;
-		y /= inputVector.y;
-	}
-
-	inline void operator *= (const Vector2D<TT>& inputVector)
-	{
-		x *= inputVector.x;
-		y *= inputVector.y;
-	}
-
-	inline void operator += (const TT& value)
-	{
-		x += value;
-		y += value;
-	}
-
-	inline void operator -= (const TT& value)
-	{
-		x -= value;
-		y -= value;
-	}
-
-	inline void operator *= (const TT& value)
-	{
-		x *= value;
-		y *= value;
-	}
-
-	inline void operator /= (const TT& value)
-	{
-		x /= value;
-		y /= value;
-	}
-
-	Vector2D operator + (const Vector2D<TT>& inputVector)
-	{
-		return Vector2D(x + inputVector.x, y + inputVector.y);
-	}
-
-	Vector2D operator - (const Vector2D<TT>& inputVector)
-	{
-		return Vector2D(x - inputVector.x, y - inputVector.y);
-	}
-	
-	Vector2D operator * (const Vector2D<TT>& inputVector)
-	{
-		return Vector2D(x *inputVector.x, y * inputVector.y);
-	}
-	
-	Vector2D operator / (const Vector2D<TT>& inputVector)
-	{
-		assert(inputVector.x != 0 && inputVector.y != 0);
-		return Vector2D(x / inputVector.x, y / inputVector.y);
-	}
-	
-	Vector2D operator + (const TT& value)
-	{
-		return Vector2D(x + value, y + value);
-	}
-	
-	Vector2D operator - (const TT& value)
-	{
-		return Vector2D(x - value, y - value);
-	}
-	
-	Vector2D operator * (const TT& value)
-	{
-		return Vector2D(x * value, y * value);
-	}
-	
-	Vector2D operator / (const TT& value)
-	{
-		assert(value != 0);
-		return Vector2D(x / value, y / value);
-	}
+	Vector2D<TT> operator / (const TT& value);
 
 	TT magnitude();
 	TT magnitude2();
@@ -141,6 +71,34 @@ public:
 private:
 
 };
+
+
+template<class TT>
+inline Vector2D<TT> operator + (const TT& value, const Vector2D<TT>& inputVector);
+
+template<class TT>
+inline Vector2D<TT> operator - (const TT& value, const Vector2D<TT>& inputVector);
+
+template<class TT>
+inline Vector2D<TT> operator * (const TT& value, const Vector2D<TT>& inputVector);
+
+template<class TT>
+inline Vector2D<TT> operator / (const TT& value, const Vector2D<TT>& inputVector);
+
+template<class TT>
+inline TT dotProduct(const Vector2D<TT>& inputVector1, const Vector2D<TT>& inputVector2);
+
+template<class TT>
+inline std::ostream& operator << (std::ostream& output, const Vector2D<TT>& v);
+
+template<class TT>
+Vector2D<TT> normalize(const Vector2D<TT>& inputVector);
+
+
+//#endif // !Vector2D
+
+
+
 
 template <class TT>
 Vector2D<TT>::Vector2D()
@@ -176,6 +134,140 @@ inline Vector2D<TT>::Vector2D(const TT inputValues[2])
 }
 
 template<class TT>
+inline TT Vector2D<TT>::operator[](const int & i) const
+{
+	assert(i == 0 || i == 1);
+	return values[i];
+}
+
+template<class TT>
+inline TT Vector2D<TT>::operator()(const int & i) const
+{
+	assert(i == 0 || i == 1);
+	return values[i];
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator=(const TT & constant)
+{
+	x = constant;
+	y = constant;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator=(const Vector2D<TT>& inputVector)
+{
+	x = inputVector.x;
+	y = inputVector.y;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator+=(const Vector2D<TT>& inputVector)
+{
+	x += inputVector.x;
+	y += inputVector.y;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator-=(const Vector2D<TT>& inputVector)
+{
+	x -= inputVector.x;
+	y -= inputVector.y;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator/=(const Vector2D<TT>& inputVector)
+{
+	x /= inputVector.x;
+	y /= inputVector.y;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator*=(const Vector2D<TT>& inputVector)
+{
+	x *= inputVector.x;
+	y *= inputVector.y;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator+=(const TT & value)
+{
+	x += value;
+	y += value;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator-=(const TT & value)
+{
+	x -= value;
+	y -= value;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator*=(const TT & value)
+{
+	x *= value;
+	y *= value;
+}
+
+template<class TT>
+inline void Vector2D<TT>::operator/=(const TT & value)
+{
+	x /= value;
+	y /= value;
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator+(const Vector2D<TT>& inputVector)
+{
+	return Vector2D<TT>(x + inputVector.x, y + inputVector.y);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator-(const Vector2D<TT>& inputVector)
+{
+	return Vector2D<TT>(x - inputVector.x, y - inputVector.y);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator*(const Vector2D<TT>& inputVector)
+{
+	return Vector2D<TT>(x *inputVector.x, y * inputVector.y);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator/(const Vector2D<TT>& inputVector)
+{
+	assert(inputVector.x != 0 && inputVector.y != 0);
+	return Vector2D<TT>(x / inputVector.x, y / inputVector.y);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator+(const TT & value)
+{
+	return Vector2D<TT>(x + value, y + value);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator-(const TT & value)
+{
+	return Vector2D<TT>(x - value, y - value);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator*(const TT & value)
+{
+	return Vector2D<TT>(x * value, y * value);
+}
+
+template<class TT>
+Vector2D<TT> Vector2D<TT>::operator/(const TT & value)
+{
+	assert(value != 0);
+	return Vector2D<TT>(x / value, y / value);
+}
+
+template<class TT>
 inline TT Vector2D<TT>::magnitude()
 {
 	return TT(sqrt(x*x + y*y));
@@ -192,8 +284,6 @@ inline void Vector2D<TT>::normalize()
 {
 	*this /= magnitude();
 }
-
-
 
 template<class TT>
 inline Vector2D<TT> operator + (const TT& value, const Vector2D<TT>& inputVector)

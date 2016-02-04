@@ -1,6 +1,11 @@
 #pragma once
 
+//#ifndef AdvectionMethod2D_H
+//#define AdvectionMethod2D_H
+#include "CommonDef.h"
+#include "Field2D.h"
 #include "LevelSet2D.h"
+
 
 template <class TT>
 class AdvectionMethod2D
@@ -39,6 +44,11 @@ public:
 private:
 
 };
+
+
+
+//#endif // !AdvectionMethod2D
+
 
 template<class TT>
 AdvectionMethod2D<TT>::AdvectionMethod2D()
@@ -415,13 +425,13 @@ inline void AdvectionMethod2D<TT>::levelSetPropagatingTVDRK3(LevelSet2D & levelS
 	Field2D<TT> wenoYMinus(levelSet.grid);
 	Field2D<TT> wenoYPlus(levelSet.grid);
 
-	
+
 
 	WENO5thApproxXMinus(levelSet.phi, wenoXMinus);
 	WENO5thApproxXPlus(levelSet.phi, wenoXPlus);
 	WENO5thApproxYMinus(levelSet.phi, wenoYMinus);
 	WENO5thApproxYPlus(levelSet.phi, wenoYPlus);
-	
+
 	double tempDxPhi, tempDyPhi;
 #pragma omp parallel for private(tempDxPhi, tempDyPhi)
 	for (int i = levelSet.grid.iStart; i <= levelSet.grid.iEnd; i++)

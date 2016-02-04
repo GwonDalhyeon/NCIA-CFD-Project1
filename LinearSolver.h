@@ -1,9 +1,31 @@
 #pragma once
-#include "CSROld.h"
 
+
+//#ifndef LinearSolver_H
+//#define LinearSolver_H
+#include "CommonDef.h"
+#include "VectorND.h"
+#include "CSROld.h"
 #include "CSR.h"
 
-using namespace std;
+template <class TT>
+VectorND<TT> CG(const CSR<TT>& A, VectorND<TT> b);
+
+template <class TT>
+double* CG(const CSR<TT>& A, double* b);
+
+double* CG(int num, double* A, double* b);
+
+//void incompleteCholesky(int num, double* A);
+
+
+double* PCG(int num, double* A, double* b);
+
+
+
+//#endif // !LinearSolver_H
+
+
 
 
 template <class TT>
@@ -11,7 +33,7 @@ VectorND<TT> CG(const CSR<TT>& A, VectorND<TT> b)
 {
 	int num = A.rowNum;
 	double tolerance = 1000 * DBL_EPSILON;
-	
+
 	VectorND<TT> rOld(num);
 	VectorND<TT> p(num);
 	VectorND<TT> rNew(num);

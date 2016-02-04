@@ -9,6 +9,11 @@
 
 #include "LinearSolver.h"
 
+//#ifndef LaplaceEquation_H
+//#define LaplaceEquation_H
+
+
+
 class LaplaceEquationSolver
 {
 public:
@@ -103,6 +108,8 @@ LaplaceEquationSolver::~LaplaceEquationSolver()
 	delete[] laplaceMatrix, laplaceVector, f, jCondition1, jCondition2, solution, tempSol;
 }
 
+
+
 inline LaplaceEquationSolver::LaplaceEquationSolver(GridInfo inputGrid)
 {
 	grid = inputGrid;
@@ -194,7 +201,7 @@ inline void LaplaceEquationSolver::generateJumpCondi(int example)
 	//Z0 = 0; Z1 = 1; numZ = 101;
 
 	levelSet = LevelSet(grid);
-	if (example==1)
+	if (example == 1)
 	{
 		for (int i = 0; i < grid.numX; i++)
 		{
@@ -204,7 +211,7 @@ inline void LaplaceEquationSolver::generateJumpCondi(int example)
 		leftBdry = 0, rightBdry = 1;
 		f[0] = leftBdry / (grid.deltaX*grid.deltaX);
 		f[grid.numMatX - 1] = rightBdry / (grid.deltaX*grid.deltaX);
-		for (int i = 0; i < grid.numMatX ; i++)
+		for (int i = 0; i < grid.numMatX; i++)
 		{
 			laplaceVector[i] = f[i];
 		}
@@ -235,19 +242,19 @@ inline void LaplaceEquationSolver::generateLaplaceMatrixJumpCondi()
 		{
 			if (i>0 && i<grid.numMatX - 1)
 			{
-				laplaceMatrix[i*grid.numMatX + i - 1]	= -1 / (grid.deltaX*grid.deltaX);
-				laplaceMatrix[i*grid.numMatX + i]		= 2 / (grid.deltaX*grid.deltaX);
-				laplaceMatrix[i*grid.numMatX + i + 1]	= -1 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i - 1] = -1 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i] = 2 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i + 1] = -1 / (grid.deltaX*grid.deltaX);
 			}
 			else if (i == 0)
 			{
-				laplaceMatrix[i*grid.numMatX + i]		= 2 / (grid.deltaX*grid.deltaX);
-				laplaceMatrix[i*grid.numMatX + i + 1]	= -1 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i] = 2 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i + 1] = -1 / (grid.deltaX*grid.deltaX);
 			}
 			else
 			{
-				laplaceMatrix[i*grid.numMatX + i - 1]	= -1 / (grid.deltaX*grid.deltaX);
-				laplaceMatrix[i*grid.numMatX + i]		= 2 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i - 1] = -1 / (grid.deltaX*grid.deltaX);
+				laplaceMatrix[i*grid.numMatX + i] = 2 / (grid.deltaX*grid.deltaX);
 			}
 		}
 	}
@@ -269,13 +276,13 @@ inline void LaplaceEquationSolver::generateLaplaceVectorJumpCondi()
 		{
 			if ((levelSet.phi[i + 1] <= 0 && levelSet.phi[i + 1 + 1]>0) || (levelSet.phi[i + 1]>0 && levelSet.phi[i + 1 + 1] <= 0))
 			{
-				theta				= abs(levelSet.phi[i + 1]) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
-				aGamma				= (jCondition1[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition1[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1 + 1]));
-				bGamma				= (jCondition2[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition2[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1 + 1]));
-				laplaceVector[i]	= laplaceVector[i] - (aGamma / (grid.deltaX*grid.deltaX) + bGamma*(1 - theta) / grid.deltaX);
-				
+				theta = abs(levelSet.phi[i + 1]) / (abs(levelSet.phi[i + 1]) + abs(levelSet.phi[i + 1 + 1]));
+				aGamma = (jCondition1[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition1[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1 + 1]));
+				bGamma = (jCondition2[i + 1] * abs(levelSet.phi[i + 1 + 1]) + jCondition2[i + 1 + 1] * abs(levelSet.phi[i + 1])) / (abs(levelSet.phi[i]) + abs(levelSet.phi[i + 1 + 1]));
+				laplaceVector[i] = laplaceVector[i] - (aGamma / (grid.deltaX*grid.deltaX) + bGamma*(1 - theta) / grid.deltaX);
+
 				i++;
-				laplaceVector[i]	= laplaceVector[i] - (-aGamma / (grid.deltaX*grid.deltaX) + bGamma*theta / grid.deltaX);
+				laplaceVector[i] = laplaceVector[i] - (-aGamma / (grid.deltaX*grid.deltaX) + bGamma*theta / grid.deltaX);
 			}
 		}
 	}
@@ -342,3 +349,7 @@ inline void LaplaceEquationSolver::outputResult()
 
 }
 
+
+
+
+//#endif // !LaplaceEquation_H

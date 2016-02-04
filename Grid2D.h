@@ -1,7 +1,10 @@
 #pragma once
+
+//#ifndef Grid2D_H
+//#define Grid2D_H
 #include "Vector2D.h"
 
-using namespace std;
+
 class Grid2D
 {
 public:
@@ -64,7 +67,7 @@ public:
 		struct { double oneOverdx2, oneOverdy2; };
 		double oneOverdxdy2[2];
 	};
-	
+
 
 	Grid2D();
 	~Grid2D();
@@ -75,28 +78,11 @@ public:
 
 	void initialize(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
 
+	inline void operator=(const Grid2D& ipGrid);
 
+	inline Vector2D<double> operator ()(const int& i, const int& j)const;
 
-	inline void operator=(const Grid2D& ipGrid)
-	{
-		initialize(ipGrid.xMin, ipGrid.xMax, ipGrid.iStart, ipGrid.iRes, ipGrid.yMin, ipGrid.yMax, ipGrid.jStart, ipGrid.jRes);
-	}
-
-	inline Vector2D<double> operator ()(const int& i, const int& j)const
-	{
-		//assert(i >= iStart && i <= iEnd);
-		//assert(j >= jStart && j <= jEnd);
-
-		return Vector2D<double>(xMin + double(i - iStart)*dx, yMin + double(j - jStart)*dy);
-	}
-
-	inline Vector2D<double> operator ()(const Vector2D<int> ipVector)const
-	{
-		//assert(ipVector.i >= iStart && ipVector.i <= iEnd);
-		//assert(ipVector.j >= jStart && ipVector.j <= jEnd);
-
-		return Vector2D<double>(xMin + double(ipVector.i - iStart)*dx, yMin + double(ipVector.j - jStart)*dy);
-	}
+	inline Vector2D<double> operator ()(const Vector2D<int> ipVector)const;
 
 	Vector2D<double> point(const int& i, const int& j);
 	Vector2D<double> cellCenter(const int& i, const int& j);
@@ -105,7 +91,14 @@ private:
 
 };
 
-inline Grid2D::Grid2D()
+
+//#endif // !Grid2D
+
+
+
+
+
+Grid2D::Grid2D()
 {
 }
 
@@ -115,7 +108,7 @@ Grid2D::~Grid2D()
 
 inline Grid2D::Grid2D(const double & ipXMin, const double & ipXmax, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjRes)
 {
-	initialize(ipXMin,ipXmax,0,ipiRes,ipYMin,ipYmax, 0,ipjRes);
+	initialize(ipXMin, ipXmax, 0, ipiRes, ipYMin, ipYmax, 0, ipjRes);
 }
 
 inline Grid2D::Grid2D(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes)
@@ -125,7 +118,7 @@ inline Grid2D::Grid2D(const double & ipXMin, const double & ipXmax, const int & 
 
 inline Grid2D::Grid2D(const Grid2D & ipGrid)
 {
-	initialize(ipGrid.xMin,ipGrid.xMax,ipGrid.iStart,ipGrid.iRes,ipGrid.yMin,ipGrid.yMax,ipGrid.jStart,ipGrid.jRes);
+	initialize(ipGrid.xMin, ipGrid.xMax, ipGrid.iStart, ipGrid.iRes, ipGrid.yMin, ipGrid.yMax, ipGrid.jStart, ipGrid.jRes);
 }
 
 inline void Grid2D::initialize(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes)
@@ -142,8 +135,8 @@ inline void Grid2D::initialize(const double & ipXMin, const double & ipXmax, con
 	yMax = ipYmax;
 	xLength = xMax - xMin;
 	yLength = yMax - yMin;
-	dx = xLength / (double)(iRes-1);
-	dy = yLength / (double)(jRes-1);
+	dx = xLength / (double)(iRes - 1);
+	dy = yLength / (double)(jRes - 1);
 	twodx = 2.0 * dx;
 	twody = 2.0*dy;
 	dx2 = dx*dx;
@@ -154,6 +147,27 @@ inline void Grid2D::initialize(const double & ipXMin, const double & ipXmax, con
 	oneOver2dy = 1.0 / twody;
 	oneOverdx2 = oneOverdx*oneOverdx;
 	oneOverdy2 = oneOverdy*oneOverdy;
+}
+
+inline void Grid2D::operator=(const Grid2D & ipGrid)
+{
+	initialize(ipGrid.xMin, ipGrid.xMax, ipGrid.iStart, ipGrid.iRes, ipGrid.yMin, ipGrid.yMax, ipGrid.jStart, ipGrid.jRes);
+}
+
+inline Vector2D<double> Grid2D::operator()(const int & i, const int & j) const
+{
+	//assert(i >= iStart && i <= iEnd);
+	//assert(j >= jStart && j <= jEnd);
+
+	return Vector2D<double>(xMin + double(i - iStart)*dx, yMin + double(j - jStart)*dy);
+}
+
+inline Vector2D<double> Grid2D::operator()(const Vector2D<int> ipVector) const
+{
+	//assert(ipVector.i >= iStart && ipVector.i <= iEnd);
+	//assert(ipVector.j >= jStart && ipVector.j <= jEnd);
+
+	return Vector2D<double>(xMin + double(ipVector.i - iStart)*dx, yMin + double(ipVector.j - jStart)*dy);
 }
 
 inline Vector2D<double> Grid2D::point(const int & i, const int & j)
@@ -187,3 +201,4 @@ inline std::ostream& operator<<(std::ostream& output, const Grid2D& grid)
 
 	return output;
 }
+
