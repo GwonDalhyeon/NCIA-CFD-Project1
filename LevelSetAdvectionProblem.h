@@ -282,6 +282,9 @@ inline void LevelSetAdvection::propaInitialCondition(const int & example)
 	{
 		cout << "Level set advection Test - Spiral" << endl;
 
+		isVelocity = false;
+		needReinitial = false;
+
 		grid = Grid2D(-1, 1, 201, -1, 1, 201);
 
 
@@ -295,7 +298,6 @@ inline void LevelSetAdvection::propaInitialCondition(const int & example)
 			}
 		}
 
-		isVelocity = false;
 
 		//dt = grid.dx*grid.dy;
 		propaMaxIteration = 1000;
@@ -304,6 +306,9 @@ inline void LevelSetAdvection::propaInitialCondition(const int & example)
 	else if (example == 3)
 	{
 		cout << "Level set advection Test - Seven-point Star" << endl;
+
+		isVelocity = true;
+		needReinitial = false;
 
 		grid = Grid2D(-0.25, 0.25, 101, -0.25, 0.25, 101);
 
