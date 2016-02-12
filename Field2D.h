@@ -303,15 +303,15 @@ inline TT Field2D<TT>::dxxPhi(const int & i, const int & j) const
 
 	if (i > grid.iStart && i < grid.iEnd)
 	{
-		return (dataArray(i + 1, j) - 2 * dataArray(i, j) + dataArray(i - 1, j))*grid.oneOver2dx;
+		return (dataArray(i + 1, j) - 2 * dataArray(i, j) + dataArray(i - 1, j))*grid.oneOverdx2;
 	}
 	else if (i == grid.iStart)
 	{
-		return (dataArray(i, j) - 2 * dataArray(i + 1, j) + dataArray(i + 2, j))*grid.oneOver2dx;
+		return (dataArray(i, j) - 2 * dataArray(i + 1, j) + dataArray(i + 2, j))*grid.oneOverdx2;
 	}
 	else
 	{
-		return (dataArray(i - 2, j) - 2 * dataArray(i - 1, j) + dataArray(i, j))*grid.oneOver2dx;
+		return (dataArray(i - 2, j) - 2 * dataArray(i - 1, j) + dataArray(i, j))*grid.oneOverdx2;
 	}
 }
 
@@ -375,15 +375,15 @@ inline TT Field2D<TT>::dyyPhi(const int & i, const int & j) const
 
 	if (j > grid.jStart && j < grid.jEnd)
 	{
-		return (dataArray(i, j + 1) - 2 * dataArray(i, j) + dataArray(i, j - 1))*grid.oneOver2dy;
+		return (dataArray(i, j + 1) - 2 * dataArray(i, j) + dataArray(i, j - 1))*grid.oneOverdy2;
 	}
 	else if (j == grid.jStart)
 	{
-		return (dataArray(i, j) - 2 * dataArray(i, j + 1) + dataArray(i, j + 2))*grid.oneOver2dy;
+		return (dataArray(i, j) - 2 * dataArray(i, j + 1) + dataArray(i, j + 2))*grid.oneOverdy2;
 	}
 	else
 	{
-		return (dataArray(i, j - 2) - 2 * dataArray(i, j - 1) + dataArray(i, j))*grid.oneOver2dy;
+		return (dataArray(i, j - 2) - 2 * dataArray(i, j - 1) + dataArray(i, j))*grid.oneOverdy2;
 	}
 }
 

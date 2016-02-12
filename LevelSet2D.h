@@ -50,7 +50,7 @@ public:
 
 	inline void computeMeanCurvature();
 	inline double computeMeanCurvature(const int& i, const int& j);
-	inline double computeMeanCurvature(const Vector2D<int> ipVector);
+	inline double computeMeanCurvature(const Vector2D<int> & ipVector);
 
 	inline Vector2D<double> gradient(const int& i, const int& j);
 
@@ -153,7 +153,7 @@ inline void LevelSet2D::computeNormal()
 	{
 		for (int i = phi.iStart; i <= phi.iEnd; i++)
 		{
-			normal.dataArray(index(i, j)) = computeNormal(i, j);
+			normal.dataArray(i, j) = computeNormal(i, j);
 		}
 	}
 }
@@ -256,7 +256,7 @@ inline void LevelSet2D::computeUnitNormal()
 	{
 		for (int i = phi.iStart; i <= phi.iEnd; i++)
 		{
-			unitNormal.dataArray(index(i, j)) = computeUnitNormal(i, j);
+			unitNormal.dataArray(i, j) = computeUnitNormal(i, j);
 		}
 	}
 }
@@ -364,10 +364,10 @@ inline void LevelSet2D::computeMeanCurvature()
 
 inline double LevelSet2D::computeMeanCurvature(const int & i, const int & j)
 {
-	return -(dxxPhi(i, j)*dyPhi(i, j)*dyPhi(i, j) - 2.0*dxyPhi(i, j)*dxPhi(i, j)*dyPhi(i, j) + dyyPhi(i, j)*dxPhi(i, j)*dxPhi(i, j)) / pow(dxPhi(i, j)*dxPhi(i, j) + dyPhi(i, j)*dyPhi(i, j), 3.0 / 2.0);
+	return -(dxxPhi(i, j)*dyPhi(i, j)*dyPhi(i, j) - 2.0*dxyPhi(i, j)*dxPhi(i, j)*dyPhi(i, j) + dyyPhi(i, j)*dxPhi(i, j)*dxPhi(i, j)) / pow(dxPhi(i, j)*dxPhi(i, j) + dyPhi(i, j)*dyPhi(i, j) + DBL_EPSILON, 3.0 / 2.0);
 }
 
-inline double LevelSet2D::computeMeanCurvature(const Vector2D<int> ipVector)
+inline double LevelSet2D::computeMeanCurvature(const Vector2D<int> & ipVector)
 {
 	return computeMeanCurvature(ipVector.i, ipVector.j);
 }
@@ -482,18 +482,18 @@ inline double LevelSet2D::dxxPhi(const int & i, const int & j)
 
 	if (i > grid.iStart && i < grid.iEnd)
 	{
-		return (phi(i + 1, j) - 2 * phi(i, j) + phi(i - 1, j))*grid.oneOver2dx;
+		return (phi(i + 1, j) - 2.0 * phi(i, j) + phi(i - 1, j))*grid.oneOverdx2;
 	}
 	else if (i == grid.iStart)
 	{
 		double tempPhi = interpolation(i - 1, j);
-		return (phi(i + 1, j) - 2 * phi(i, j) + tempPhi)*grid.oneOver2dx;
+		return (phi(i + 1, j) - 2.0 * phi(i, j) + tempPhi)*grid.oneOverdx2;
 		//return (phi(i, j) - 2 * phi(i + 1, j) + phi(i + 2, j))*grid.oneOver2dx;
 	}
 	else
 	{
 		double tempPhi = interpolation(i + 1, j);
-		return (tempPhi - 2 * phi(i, j) + phi(i - 1, j))*grid.oneOver2dx;
+		return (tempPhi - 2.0 * phi(i, j) + phi(i - 1, j))*grid.oneOverdx2;
 		//return (phi(i - 2, j) - 2 * phi(i - 1, j) + phi(i, j))*grid.oneOver2dx;
 	}
 }
@@ -562,15 +562,15 @@ inline double LevelSet2D::dyyPhi(const int & i, const int & j)
 
 	if (j > grid.jStart && j < grid.jEnd)
 	{
-		return (phi(i, j + 1) - 2 * phi(i, j) + phi(i, j - 1))*grid.oneOver2dy;
+		return (phi(i, j + 1) - 2 * phi(i, j) + phi(i, j - 1))*grid.oneOverdy2;
 	}
 	else if (j == grid.jStart)
 	{
-		return (phi(i, j) - 2 * phi(i, j + 1) + phi(i, j + 2))*grid.oneOver2dy;
+		return (phi(i, j) - 2 * phi(i, j + 1) + phi(i, j + 2))*grid.oneOverdy2;
 	}
 	else
 	{
-		return (phi(i, j - 2) - 2 * phi(i, j - 1) + phi(i, j))*grid.oneOver2dy;
+		return (phi(i, j - 2) - 2 * phi(i, j - 1) + phi(i, j))*grid.oneOverdy2;
 	}
 }
 

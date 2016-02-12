@@ -133,6 +133,7 @@ inline VectorND<TT>::VectorND(const VectorND<TT>& ipVector)
 
 	assert(ipVector.iLength > 0);
 	iLength = ipVector.iLength;
+	iEnd = ipVector.iEnd;
 	values = new TT[iLength];
 
 #pragma omp parallel for
@@ -145,14 +146,14 @@ inline VectorND<TT>::VectorND(const VectorND<TT>& ipVector)
 template<class TT>
 inline TT & VectorND<TT>::operator[](const int & i) const
 {
-	assert(i >= 0 || i < iLength);
+	assert(i >= 0 || i <= iEnd);
 	return values[i];
 }
 
 template<class TT>
 inline TT & VectorND<TT>::operator()(const int & i) const
 {
-	assert(i >= 0 || i < iLength);
+	assert(i >= 0 || i <= iEnd);
 	return values[i];
 }
 
@@ -160,7 +161,7 @@ template<class TT>
 inline void VectorND<TT>::operator=(const TT & constant)
 {
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] = constant;
 	}
@@ -170,6 +171,7 @@ template<class TT>
 inline void VectorND<TT>::operator=(const VectorND<TT>& ipVector)
 {
 	iLength = ipVector.iLength;
+	iEnd = ipVector.iEnd;
 
 	if (values != nullptr)
 	{
@@ -179,7 +181,7 @@ inline void VectorND<TT>::operator=(const VectorND<TT>& ipVector)
 	values = new TT[iLength];
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] = ipVector.values[i];
 	}
@@ -190,7 +192,7 @@ inline void VectorND<TT>::operator+=(const VectorND<TT>& ipVector)
 {
 	assert(iLength == ipVector.iLength);
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] += ipVector.values[i];
 	}
@@ -201,7 +203,7 @@ inline void VectorND<TT>::operator-=(const VectorND<TT>& ipVector)
 {
 	assert(iLength == ipVector.iLength);
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] -= ipVector.values[i];
 	}
@@ -212,7 +214,7 @@ inline void VectorND<TT>::operator/=(const VectorND<TT>& ipVector)
 {
 	assert(iLength == ipVector.iLength);
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] /= ipVector.values[i];
 	}
@@ -223,7 +225,7 @@ inline void VectorND<TT>::operator*=(const VectorND<TT>& ipVector)
 {
 	assert(iLength == ipVector.iLength);
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] *= ipVector.values[i];
 	}
@@ -233,7 +235,7 @@ template<class TT>
 inline void VectorND<TT>::operator+=(const TT & constant)
 {
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] += constant;
 	}
@@ -243,7 +245,7 @@ template<class TT>
 inline void VectorND<TT>::operator-=(const TT & constant)
 {
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] -= constant;
 	}
@@ -253,7 +255,7 @@ template<class TT>
 inline void VectorND<TT>::operator*=(const TT & constant)
 {
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] *= constant;
 	}
@@ -264,7 +266,7 @@ inline void VectorND<TT>::operator/=(const TT & constant)
 {
 	assert(constant > 0 || constant < 0);
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		values[i] /= constant;
 	}
@@ -278,7 +280,7 @@ VectorND<TT> VectorND<TT>::operator+(const VectorND<TT>& ipVector)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = values[i] + ipVector.values[i];
 	}
@@ -293,7 +295,7 @@ VectorND<TT> VectorND<TT>::operator-(const VectorND<TT>& ipVector)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = values[i] - ipVector.values[i];
 	}
@@ -308,7 +310,7 @@ VectorND<TT> VectorND<TT>::operator*(const VectorND<TT>& ipVector)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = values[i] * ipVector.values[i];
 	}
@@ -323,7 +325,7 @@ VectorND<TT> VectorND<TT>::operator/(const VectorND<TT>& ipVector)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		assert(ipVector.values[i]>0 && ipVector.values[i]<0);
 		returnVT.values[i] = values[i] / ipVector.values[i];
@@ -337,7 +339,7 @@ VectorND<TT> VectorND<TT>::operator+(const TT & constant)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = ipVector.values[i] + constant;
 	}
@@ -351,7 +353,7 @@ VectorND<TT> VectorND<TT>::operator-(const TT & constant)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = ipVector.values[i] - constant;
 	}
@@ -364,7 +366,7 @@ VectorND<TT> VectorND<TT>::operator*(const TT & constant)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = ipVector.values[i] * constant;
 	}
@@ -378,7 +380,7 @@ VectorND<TT> VectorND<TT>::operator/(const TT & constant)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = ipVector.values[i] / constant;
 	}
@@ -392,7 +394,7 @@ inline TT VectorND<TT>::magnitude2()
 {
 	TT mag2 = 0;
 
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		mag2 = mag2 + values[i] * values[i];
 	}
@@ -418,7 +420,7 @@ inline VectorND<TT> operator+(const TT & constant, const VectorND<TT>& ipVector)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = constant + ipVector.values[i];
 	}
@@ -430,7 +432,7 @@ inline VectorND<TT> operator-(const TT & constant, const VectorND<TT>& ipVector)
 {
 	VectorND<TT> returnVT(ipVector.iLength);
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = constant - ipVector.values[i];
 	}
@@ -442,7 +444,7 @@ inline VectorND<TT> operator*(const TT & constant, const VectorND<TT>& ipVector)
 {
 	VectorND<TT> returnVT(ipVector.iLength);
 #pragma omp parallel for
-	for (int i = 0; i < ipVector.iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		returnVT.values[i] = constant * ipVector.values[i];
 	}
@@ -455,7 +457,7 @@ inline VectorND<TT> operator/(const TT & constant, const VectorND<TT>& ipVector)
 	VectorND<TT> returnVT(ipVector.iLength);
 
 #pragma omp parallel for
-	for (int i = 0; i < iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		assert(ipVector.values[i] != 0);
 		returnVT.values[i] = constant / ipVector.values[i];
@@ -470,7 +472,7 @@ inline TT dotProduct(const VectorND<TT>& ipVector1, const VectorND<TT>& ipVector
 
 	double dotPro = 0;
 
-	for (int i = 0; i < ipVector1.iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		dotPro = dotPro + ipVector1[i] * ipVector2[i];
 	}
@@ -481,7 +483,7 @@ inline TT dotProduct(const VectorND<TT>& ipVector1, const VectorND<TT>& ipVector
 template<class TT>
 inline std::ostream & operator<<(std::ostream & output, const VectorND<TT>& ipVector)
 {
-	for (int i = 0; i < ipVector.iLength; i++)
+	for (int i = 0; i <= iEnd; i++)
 	{
 		output << i << " " << ipVector[i] << endl;;
 	}

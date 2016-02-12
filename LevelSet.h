@@ -21,43 +21,7 @@ public:
 	double unitNormal(int node);
 	void unitNormal(int node1, int node2, double* normal);
 
-	LevelSet& operator=(const LevelSet& originLevelSet)
-	{
-		grid = originLevelSet.grid;
-
-		if (phi != nullptr)
-		{
-			delete[] phi;
-		}
-
-		if (grid.dimension == 1)
-		{
-			phi = new double[grid.numX];
-			for (int i = 0; i < grid.numX; i++)
-			{
-				phi[i] = originLevelSet.phi[i];
-			}
-		}
-		else if (grid.dimension == 2)
-		{
-			phi = new double[grid.numX*grid.numY];
-			for (int i = 0; i < grid.numX*grid.numY; i++)
-			{
-				phi[i] = originLevelSet.phi[i];
-			}
-		}
-		else
-		{
-			phi = new double[grid.numX*grid.numY*grid.numZ];
-			for (int i = 0; i < grid.numX*grid.numY*grid.numZ; i++)
-			{
-				phi[i] = originLevelSet.phi[i];
-			}
-		}
-
-
-		return *this;
-	}
+	LevelSet& operator=(const LevelSet& originLevelSet);
 private:
 
 };
@@ -218,6 +182,44 @@ inline void LevelSet::unitNormal(int node1, int node2, double* normal)
 			normal[1] = (phi[index(grid.numX - 1, j)] - phi[index(grid.numX - 1, j - 1)]) / (abs(phi[index(grid.numX - 1, j)] - phi[index(grid.numX - 1, j - 1)]) + DBL_EPSILON);
 		}
 	}
+}
+
+inline LevelSet & LevelSet::operator=(const LevelSet & originLevelSet)
+{
+	grid = originLevelSet.grid;
+
+	if (phi != nullptr)
+	{
+		delete[] phi;
+	}
+
+	if (grid.dimension == 1)
+	{
+		phi = new double[grid.numX];
+		for (int i = 0; i < grid.numX; i++)
+		{
+			phi[i] = originLevelSet.phi[i];
+		}
+	}
+	else if (grid.dimension == 2)
+	{
+		phi = new double[grid.numX*grid.numY];
+		for (int i = 0; i < grid.numX*grid.numY; i++)
+		{
+			phi[i] = originLevelSet.phi[i];
+		}
+	}
+	else
+	{
+		phi = new double[grid.numX*grid.numY*grid.numZ];
+		for (int i = 0; i < grid.numX*grid.numY*grid.numZ; i++)
+		{
+			phi[i] = originLevelSet.phi[i];
+		}
+	}
+
+
+	return *this;
 }
 
 

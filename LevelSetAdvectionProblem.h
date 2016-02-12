@@ -172,7 +172,7 @@ inline void LevelSetAdvection::advectionSolver(const int & example, const bool &
 				}
 			}
 
-			if (i %reconstWriteIter == 10)
+			if (i %reconstWriteIter == 0)
 			{
 				outputResult(i);
 			}
@@ -353,6 +353,9 @@ inline void LevelSetAdvection::reinitializationInitialCondition(const int & exam
 	exactLevelSet = LevelSet2D(grid);
 	levelSet = LevelSet2D(grid);
 
+	isVelocity = false;
+	needReinitial = false;
+
 	double a = 0.7;
 	double r = 1.0;
 
@@ -464,16 +467,20 @@ inline void LevelSetAdvection::reinitializationInitialCondition(const int & exam
 
 inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 {
+	isVelocity = false;
+	needReinitial = false;
+
 	if (example == 1)
 	{
 		grid = Grid2D(0, 1, 101, 0, 1, 101);
 		levelSet = LevelSet2D(grid);
 		distance = Field2D<double>(grid);
-		distance.dataArray = 100;
+		//distance.dataArray = 100;
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPoint = VectorND<Vector2D<double>>(18);
 		//dt = grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 500;
+		reconstWriteIter = 10;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
 		curvatureThreshold = (grid.xMax - grid.xMin) * 10;
@@ -505,10 +512,6 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 				}
 			}
 		}
-
-
-
-
 	}
 	else if (example == 2)
 	{
@@ -516,12 +519,13 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		grid = Grid2D(0, 1, 101, 0, 1, 101);
 		levelSet = LevelSet2D(grid);
 		distance = Field2D<double>(grid);
-		distance.dataArray = 100;
+		//distance.dataArray = 100;
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPointNum = 100;
 		givenPoint = VectorND<Vector2D<double>>(givenPointNum);
 		//dt = 5 * grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 500;
+		reconstWriteIter = 10;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
 		curvatureThreshold = (grid.xMax - grid.xMin) * 10;
@@ -579,12 +583,13 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		grid = Grid2D(0, 1, 101, 0, 1, 101);
 		levelSet = LevelSet2D(grid);
 		distance = Field2D<double>(grid);
-		distance.dataArray = 100;
+		//distance.dataArray = 100;
 		reconstructionVelocity = Field2D<double>(grid);
 		givenPointNum = 100;
 		givenPoint = VectorND<Vector2D<double>>(givenPointNum);
 		//dt = 5 * grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 500;
+		reconstWriteIter = 10;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
 		curvatureThreshold = (grid.xMax - grid.xMin) * 10;
@@ -632,12 +637,13 @@ inline void LevelSetAdvection::surfReconstInitialCondition(const int & example)
 		grid = Grid2D(0, 1, 101, 0, 1, 101);
 		levelSet = LevelSet2D(grid);
 		distance = Field2D<double>(grid);
-		distance.dataArray = 100;
+		//distance.dataArray = 100;
 		reconstructionVelocity = Field2D<double>(grid);
-		givenPointNum = 100;
+		givenPointNum = 400;
 		givenPoint = VectorND<Vector2D<double>>(givenPointNum);
 		//dt = 5 * grid.dx*grid.dy / 2.0;
 		reconstMaxIteration = 5000;
+		reconstWriteIter = 10;
 		LpNorm = 2;
 		distanceThreshold = 10 * grid.dx;
 		curvatureThreshold = (grid.xMax - grid.xMin) * 10;
@@ -697,7 +703,37 @@ inline void LevelSetAdvection::computeVelocity()
 	double tempDist;
 	double tempCurvature;
 
-#pragma omp parallel for private(lastTerm, tempDist,tempCurvature, gradPhi)
+	levelSet.computeMeanCurvature();
+
+	ofstream solutionFile3;
+	solutionFile3.open("D:\\Data/curvature.txt", ios::binary);
+	for (int i = grid.iStart; i <= grid.iEnd; i++)
+	{
+		for (int j = grid.jStart; j <= grid.jEnd; j++)
+		{
+			solutionFile3 << i << " " << j << " " << grid(i, j) << " " << levelSet.meanCurvature(i, j) <<" " << levelSet.dxxPhi(i, j)*levelSet.dyPhi(i, j)*levelSet.dyPhi(i, j) << " "<< -2.0*levelSet.dxyPhi(i, j)*levelSet.dxPhi(i, j)*levelSet.dyPhi(i, j) <<" " << levelSet.dyyPhi(i, j)*levelSet.dxPhi(i, j)*levelSet.dxPhi(i, j)<<" " << levelSet.dxPhi(i, j) << " " << levelSet.dyPhi(i, j) << " " << levelSet.dxyPhi(i, j)<<" " << levelSet.dxxPhi(i, j) << " " << levelSet.dyyPhi(i, j) << endl;
+			//cout <<i<<" "<<j<<" "<< levelSet.meanCurvature(i, j) << endl;
+			////cout << -(levelSet.dxxPhi(i, j)*levelSet.dyPhi(i, j)*levelSet.dyPhi(i, j) - 2.0*levelSet.dxyPhi(i, j)*levelSet.dxPhi(i, j)*levelSet.dyPhi(i, j) + levelSet.dyyPhi(i, j)*levelSet.dxPhi(i, j)*levelSet.dxPhi(i, j)) << endl;
+			////cout << "dxx :" << levelSet.dxxPhi(i, j) << endl;
+			//cout << "dy  :" << levelSet.dyPhi(i, j) << endl;
+			////cout << "term:" << levelSet.dxxPhi(i, j)*levelSet.dyPhi(i, j)*levelSet.dyPhi(i, j) << endl;
+			//cout << "dxy :" << levelSet.dxyPhi(i, j) << endl;
+			//cout << "dx  :" << levelSet.dxPhi(i, j) << endl;
+			////cout << "term:" << -2.0*levelSet.dxyPhi(i, j)*levelSet.dxPhi(i, j)*levelSet.dyPhi(i, j) << endl;
+			//cout << "dyy :" << levelSet.dyyPhi(i, j) << endl;
+			//cout << "term:" << levelSet.dyyPhi(i, j)*levelSet.dxPhi(i, j)*levelSet.dxPhi(i, j) << endl;
+			////cout << endl;	
+			//cout << pow(levelSet.dxPhi(i, j)*levelSet.dxPhi(i, j) + levelSet.dyPhi(i, j)*levelSet.dyPhi(i, j) + DBL_EPSILON, 3.0 / 2.0) << endl;
+		}
+	}
+	solutionFile3.close();
+
+	ofstream solutionFile2;
+	solutionFile2.open("D:\\Data/dotproduct.txt", ios::binary);
+
+	ofstream solutionFile4;
+	solutionFile4.open("D:\\Data/lastterm.txt", ios::binary);
+	//#pragma omp parallel for private(lastTerm, tempDist,tempCurvature, gradPhi)
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
 		for (int j = grid.jStart; j <= grid.jEnd; j++)
@@ -714,8 +750,9 @@ inline void LevelSetAdvection::computeVelocity()
 				tempCurvature = AdvectionMethod2D<double>::sign(levelSet.meanCurvature(i, j))* min(abs(levelSet.meanCurvature(i, j)), curvatureThreshold);
 				lastTerm = dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) + 1.0 / LpNorm*tempDist*tempCurvature;
 			}
-
-			//velocity(i, j) = gradPhi.magnitude()*integralTerm*pow(distance(i, j), LpNorm - 1)*lastTerm;
+			solutionFile2 << i << " " << j << " " << grid(i, j) << " " << dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) << endl;
+			solutionFile4 << i << " " << j << " " << grid(i, j) << " " << lastTerm << endl;
+			//reconstructionVelocity(i, j) = gradPhi.magnitude()*integralTerm*pow(distance(i, j), LpNorm - 1)*lastTerm;
 			reconstructionVelocity(i, j) = gradPhi.magnitude()*integralTerm*pow(min(distance(i, j), distanceThreshold), LpNorm - 1)*lastTerm;
 
 			//if (i < 1 && j < 1)
@@ -734,12 +771,15 @@ inline void LevelSetAdvection::computeVelocity()
 			//}
 		}
 	}
+	solutionFile2.close();
+	solutionFile4.close();
+
 }
 
 inline double LevelSetAdvection::computeIntegralTerm()
 {
 	double sum = 0.0;
-	levelSet.computeMeanCurvature();
+	
 #pragma omp parallel for reduction(+:sum)
 	for (int i = grid.iStart; i <= grid.iEnd; i++)
 	{
@@ -829,10 +869,10 @@ inline double LevelSetAdvection::distance2Data(const int & i, const int & j)
 	double distance = 100;
 	double tempDist;
 
-	for (int i = 0; i < givenPointNum; i++)
+	for (int k = 0; k < givenPointNum; k++)
 	{
-		tempDist = (givenPoint(i) - grid(i, j)).magnitude();
-		if (distance < tempDist)
+		tempDist = (givenPoint(k) - grid(i, j)).magnitude();
+		if (distance > tempDist)
 		{
 			distance = tempDist;
 		}
@@ -848,7 +888,7 @@ inline void LevelSetAdvection::exactDistance()
 	{
 		for (int j = grid.jStart; j <= grid.jEnd; j++)
 		{
-			distance2Data(i, j);
+			distance(i, j) = distance2Data(i, j);
 		}
 	}
 }
