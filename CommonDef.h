@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <string>
 #include <omp.h>
+#include <stdlib.h>  
 
 //#include "MACROS.h"
 //#include "VECTOR_2D.h"
