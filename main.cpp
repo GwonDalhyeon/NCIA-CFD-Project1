@@ -16,7 +16,7 @@ void main()
 //	cout << omp_get_thread_num() << endl;
 
 	LevelSetAdvection levelSet;
-	levelSet.advectionSolver(6, false, false, true, 0.1);
+	levelSet.advectionSolver(5, false, false, true, 0.1);
 
 
 	//SurfaceReconst<double> surface;

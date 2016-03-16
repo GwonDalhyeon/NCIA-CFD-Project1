@@ -874,8 +874,10 @@ inline void LevelSetAdvection::computeVelocity()
 			}
 			//solutionFile2 << i << " " << j << " " << grid(i, j) << " " << dotProduct(distance.gradient(i, j), gradPhi / (gradPhi.magnitude() + DBL_EPSILON)) << endl;
 			//solutionFile4 << i << " " << j << " " << grid(i, j) << " " << lastTerm << endl;
+
 			//reconstructionVelocity(i, j) = gradPhi.magnitude()*integralTerm*pow(distance(i, j), LpNorm - 1)*lastTerm;
-			reconstructionVelocity(i, j) = gradPhi.magnitude()*integralTerm*pow(min(distance(i, j), distanceThreshold), LpNorm - 1)*lastTerm;
+			//reconstructionVelocity(i, j) = gradPhi.magnitude()*integralTerm*pow(min(distance(i, j), distanceThreshold), LpNorm - 1)*lastTerm;
+			reconstructionVelocity(i, j) = gradPhi.magnitude()*integralTerm*lastTerm;
 
 			//if (i < 1 && j < 1)
 			//{

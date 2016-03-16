@@ -15,8 +15,11 @@ class Field2D
 {
 public:
 	Grid2D grid;
+	Grid2D ghostGrid;
 	Array2D<TT> dataArray;
+	Array2D<TT> ghostDataArray;
 
+	int ghostWidth; // Default value is 1.
 	int iRes, jRes;
 	int iStart, jStart, iEnd, jEnd;
 	double xMin, yMin, xMax, yMax;
@@ -31,12 +34,26 @@ public:
 	Field2D();
 	~Field2D();
 
+
+	// Non-Ghost Grid
 	Field2D(const Grid2D& ipGrid);
 	Field2D(const double& ipXMin, const double& ipXmax, const int& ipiRes, const double& ipYMin, const double& ipYmax, const int& ipjRes);
 	Field2D(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
 
 	void initialize(const Grid2D& ipGrid);
 	void initialize(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
+
+
+	// Ghost Grid
+	Field2D(const int& ipGhostWidth, const Grid2D& ipGrid);
+	Field2D(const int& ipGhostWidth, const double& ipXMin, const double& ipXmax, const int& ipiRes, const double& ipYMin, const double& ipYmax, const int& ipjRes);
+	Field2D(const int& ipGhostWidth, const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
+
+	void initialize(const int& ipGhostWidth, const Grid2D& ipGrid);
+	//void initialize(const int& ipGhostWidth, double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes);
+
+
+
 
 	inline TT& operator [](const int& i) const;
 
@@ -62,6 +79,8 @@ public:
 
 	inline TT interpolation(const double& x, const double& y) const;
 	inline TT interpolation(const Vector2D<double>& ipVector) const;
+	
+	inline void FillGhostCell();
 
 	inline Vector2D<int> containedCell(const double& x, const double& y) const;
 
@@ -87,6 +106,8 @@ public:
 	inline TT dyPlusPhiSubcell(const int& i, const int& j) const;
 	inline TT dyMinusPhiSubcell(const int& i, const int& j) const;
 
+
+
 private:
 
 };
@@ -111,32 +132,27 @@ template<class TT>
 inline Field2D<TT>::Field2D(const Grid2D & ipGrid)
 {
 	grid = ipGrid;
-	initialize(grid);
-	dataArray = Array2D<TT>(grid);
+	initialize(1, grid);
 }
 
 template<class TT>
 inline Field2D<TT>::Field2D(const double & ipXMin, const double & ipXmax, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjRes)
 {
 	grid.initialize(ipXMin, ipXmax, 0, ipiRes, ipYMin, ipYmax, 0, ipjRes);
-	initialize(grid);
-	dataArray = Array2D<TT>(grid);
+	initialize(1, grid);
 }
 
 template<class TT>
 inline Field2D<TT>::Field2D(const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes)
 {
 	grid.initialize(ipXMin, ipXmax, ipiStart, ipiRes, ipYMin, ipYmax, ipjStart, ipjRes);
-	initialize(grid);
-	dataArray = Array2D<TT>(grid);
+	initialize(1, grid);
 }
-
 
 template<class TT>
 inline void Field2D<TT>::initialize(const Grid2D & ipGrid)
 {
-	grid = ipGrid;
-	initialize(ipGrid.xMin, ipGrid.xMax, ipGrid.iStart, ipGrid.iRes, ipGrid.yMin, ipGrid.yMax, ipGrid.iStart, ipGrid.iRes);
+	initialize(ipGrid.xMin, ipGrid.xMax, ipGrid.iStart, ipGrid.iRes, ipGrid.yMin, ipGrid.yMax, ipGrid.jStart, ipGrid.jRes);
 	dataArray = Array2D<TT>(grid);
 }
 
@@ -168,6 +184,47 @@ inline void Field2D<TT>::initialize(const double & ipXMin, const double & ipXmax
 	oneOverdx2 = oneOverdx*oneOverdx;
 	oneOverdy2 = oneOverdy*oneOverdy;
 }
+
+template<class TT>
+inline Field2D<TT>::Field2D(const int & ipGhostWidth, const Grid2D & ipGrid)
+{
+	grid = ipGrid;
+
+	initialize(ipGhostWidth, grid);
+}
+
+template<class TT>
+inline Field2D<TT>::Field2D(const int & ipGhostWidth, const double & ipXMin, const double & ipXmax, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjRes)
+{
+	grid.initialize(ipXMin, ipXmax, 0, ipiRes, ipYMin, ipYmax, 0, ipjRes);
+
+	initialize(ipGhostWidth, grid);
+}
+
+template<class TT>
+inline Field2D<TT>::Field2D(const int & ipGhostWidth, const double & ipXMin, const double & ipXmax, const int & ipiStart, const int & ipiRes, const double & ipYMin, const double & ipYmax, const int & ipjStart, const int & ipjRes)
+{
+	grid.initialize(ipXMin, ipXmax, ipiStart, ipiRes, ipYMin, ipYmax, ipjStart, ipjRes);
+
+	initialize(ipGhostWidth, grid);
+}
+
+template<class TT>
+inline void Field2D<TT>::initialize(const int & ipGhostWidth, const Grid2D & ipGrid)
+{
+	ghostWidth = ipGhostWidth;
+
+	initialize(ipGrid.xMin, ipGrid.xMax, ipGrid.iStart, ipGrid.iRes, ipGrid.yMin, ipGrid.yMax, ipGrid.iStart, ipGrid.iRes);
+	dataArray = Array2D<TT>(ipGrid);
+
+	double widthX = double(ghostWidth)*(ipGrid.xMax - ipGrid.xMin) / double(ipGrid.iRes - 1);
+	double widthY = double(ghostWidth)*(ipGrid.yMax - ipGrid.yMin) / double(ipGrid.jRes - 1);
+
+	ghostGrid.initialize(ipGrid.xMin - widthX, ipGrid.xMax + widthX, ipGrid.iStart - ghostWidth, ipGrid.iRes + 2 * ghostWidth, ipGrid.yMin - widthY, ipGrid.yMax + widthY, ipGrid.iStart - widthY, ipGrid.jRes + 2 * ghostWidth);
+	ghostDataArray = Array2D<TT>(ghostGrid);
+}
+
+
 
 template<class TT>
 inline TT & Field2D<TT>::operator[](const int & i) const
@@ -263,6 +320,70 @@ template<class TT>
 inline TT Field2D<TT>::interpolation(const Vector2D<double>& ipVector) const
 {
 	return interpolation(ipVector.x, ipVector.y);
+}
+
+template<class TT>
+inline void Field2D<TT>::FillGhostCell()
+{
+	if (ghostWidth<=0)
+	{
+		return;
+	}
+
+
+	for (int j = jStart; j <=jEnd; j++)
+	{
+		for (int i = iStart; i <= iStart + 1; i++)
+		{
+			ghostDataArray(i, j) = dataArray(i, j);
+		}
+		for (int i = iEnd - 1; i <= iEnd; i++)
+		{
+			ghostDataArray(i, j) = dataArray(i, j);
+		}
+
+		// Left
+		for (int i = iStart-1; i <= iStart-ghostWidth; i--)
+		{
+			ghostDataArray(i, j) = ghostDataArray(i + 1, j) + oneOverdx*(ghostDataArray(i + 1, j) - ghostDataArray(i + 2, j));
+		}
+
+		// Right
+		for (int i = iEnd + 1; i <= iEnd + ghostWidth; i++)
+		{
+			ghostDataArray(i, j) = ghostDataArray(i - 1, j) + oneOverdx*(ghostDataArray(i - 1, j) - ghostDataArray(i - 2, j));
+		}
+	}
+
+	for (int i = iStart; i <= iEnd; i++)
+	{
+		for (int j = jStart; j <= jStart + 1; j++)
+		{
+			ghostDataArray(i, j) = dataArray(i, j);
+		}
+		for (int j = jEnd - 1; j <= jEnd; j++)
+		{
+			ghostDataArray(i, j) = dataArray(i, j);
+		}
+
+		// Bottom
+		for (int j = jStart - 1; j <= jStart - ghostWidth; j--)
+		{
+			ghostDataArray(i, j) = ghostDataArray(i, j + 1) + oneOverdy*(ghostDataArray(i, j + 1) - ghostDataArray(i, j + 2));
+		}
+
+		// Top
+		for (int j = jEnd + 1; j <= jEnd + ghostWidth; j++)
+		{
+			ghostDataArray(i, j) = ghostDataArray(i, j - 1) + oneOverdy*(ghostDataArray(i, j - 1) - ghostDataArray(i, j - 2));
+		}
+	}
+
+	// Corner
+	ghostDataArray(iStart - 1, jStart - 1) = ghostDataArray(iStart, jStart) + oneOverdx*(ghostDataArray(iStart, jStart) - ghostDataArray(iStart + 1, jStart)) + oneOverdy*(ghostDataArray(iStart, jStart) - ghostDataArray(iStart, jStart + 1));
+	ghostDataArray(iStart - 1, jEnd + 1)   = ghostDataArray(iStart, jEnd)   + oneOverdx*(ghostDataArray(iStart, jEnd) - ghostDataArray(iStart + 1, jEnd))     + oneOverdy*(ghostDataArray(iStart, jEnd) - ghostDataArray(iStart, jEnd - 1));
+	ghostDataArray(iEnd + 1, jStart - 1)   = ghostDataArray(iEnd, jStart)   + oneOverdx*(ghostDataArray(iEnd, jStart) - ghostDataArray(iEnd - 1, jStart))     + oneOverdy*(ghostDataArray(iEnd, jStart) - ghostDataArray(iEnd, jStart + 1));
+	ghostDataArray(iEnd + 1, jEnd + 1)     = ghostDataArray(iEnd, jEnd)     + oneOverdx*(ghostDataArray(iEnd, jEnd) - ghostDataArray(iEnd - 1, jEnd))         + oneOverdy*(ghostDataArray(iEnd, jEnd) - ghostDataArray(iEnd, jEnd - 1));
 }
 
 template<class TT>
